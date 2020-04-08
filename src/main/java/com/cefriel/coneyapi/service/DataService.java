@@ -360,6 +360,12 @@ public class DataService {
         for(AnswersResponse l: list) {
 
             user = l.getUser();
+
+            //la query torna anche le risposte non legate ad utenti, che non servono in questo export
+            if(user == null || user.equals("")){
+                continue;
+            }
+
             if(anonymize){
                 user = l.getAnonymizedUser();
             }
