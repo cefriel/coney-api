@@ -184,19 +184,20 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 	List<Block> getAnswersToQuestion(int blockId, String conversationId);
 
 	//TEST
-	@Query("MATCH (c:Conversation {conv_id:{0}})-[a:STARTS|LEADS_TO*]->(b:Block) " +
-			"WHERE b.block_type='Question' WITH b, LENGTH(a) AS depth  return DISTINCT " +
-			"id(b) as neo4jId, b.block_id as reteId, " +
+	@Query("MATCH (c:Conversation {conv_id:{0}}), (b:Block {block_type:'Question', of_conversation:{0}}), " +
+			"p = shortestPath((c)-[a:STARTS|LEADS_TO*]-(b)) " +
+			"RETURN id(b) as neo4jId, b.block_id as reteId, " +
 			"b.block_type as type, b.block_subtype as subtype, b.of_conversation as ofConversation, " +
-			"b.visualization as questionType, b.text as text, depth")
+			"b.visualization as questionType, b.text as text, length(p) as depth")
+
 	List<QuestionBlock> getOrderedQuestionsToPrint(String conversationId);
 
 	@Query("MATCH (b:Block {block_id: {0}, of_conversation: {1}})-[:LEADS_TO]->(a:Block {block_type: 'Answer'})" +
-			" OPTIONAL MATCH n=(a)-[:LEADS_TO*]->(nq:Block {block_type:\"Question\"}) " +
-			" WITH a,nq ORDER BY length(n) ASC " +
+		//	" OPTIONAL MATCH n=(a)-[:LEADS_TO*]->(nq:Block {block_type:\"Question\"}) " +
+		//	" WITH a,nq ORDER BY length(n) ASC " +
 			" RETURN DISTINCT id(a) as neo4jId, a.block_id as reteId, " +
 			"a.block_type as type, a.block_subtype as subtype, a.of_conversation as ofConversation, " +
-			"a.value as value, a.text as text, a.order as order, nq.block_id as nextQuestionId LIMIT {2}")
+			"a.value as value, a.text as text, a.order as order")//, nq.block_id as nextQuestionId LIMIT {2}")
 	List<AnswerBlock> getAnswersToQuestionToPrint(int blockId, String conversationId, int answersAmount);
 
 	@Query("MATCH (b:Block {of_conversation: {1}})-[:LEADS_TO]->(a:Block {block_type: 'Answer'}) " +

@@ -82,9 +82,16 @@ public class ChatService {
         Timestamp time = new Timestamp(System.currentTimeMillis());
         String timestamp = sdf.format(time);
 
-        Random rnd = new Random();
-        int s = 100000 + rnd.nextInt(900000);
-        String session = "s_"+s;
+        String session;
+        if(oldSession.contains("continue_s_")){ //linking two compilations
+            session = oldSession.substring(9);
+            oldSession = "";
+        } else {
+            Random rnd = new Random();
+            int s = 100000 + rnd.nextInt(900000);
+            session = "s_"+s;
+        }
+
 
         if(oldSession.equals("")) {
             resultJson.addProperty("session", session);

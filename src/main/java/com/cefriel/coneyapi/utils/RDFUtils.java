@@ -39,7 +39,7 @@ public class RDFUtils {
     }
     
     public static String getBlockId(String conversationId, Block b) {   	
-    	String block_id = "Block_" + conversationId + "_" + b.getBlockId();
+    	String block_id = "Block_" + conversationId + "_" + b.getNeo4jId();
     	
     	if (b.getBlockType().toLowerCase().equals("answer") 
     			&& b.getBlockSubtype().toLowerCase().equals("checkbox")) {

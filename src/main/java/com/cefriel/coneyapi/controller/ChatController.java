@@ -54,7 +54,14 @@ public class ChatController {
             noRepeat = "";
         }
 
+        if(session != null && session.contains("continue_s_")){
+            oldSession = session;
+        }
+
         if(restart == 0 && userId != null && !userId.equals("") && noRepeat.equals("noRepeat")){
+
+            //insert session try
+
             logger.info("[CHAT] No-repeat check, looking for previous compilation");
             String finishedSession = chatService.wasTheConversationFinished(userId, conversationId);
             if(finishedSession != null){
@@ -72,9 +79,11 @@ public class ChatController {
                 resultJson.addProperty("re-session", sessionAlreadyStarted);
                 return resultJson.toString();
             } else {
-                if(userId.contains("u_")){
+
+                if(userId.contains("u_") && oldSession.equals("")){
                     userId = null;
                 }
+
             }
         } else if(restart == 1){ //=restart
 

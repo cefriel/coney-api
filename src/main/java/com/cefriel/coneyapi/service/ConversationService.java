@@ -353,9 +353,14 @@ public class ConversationService {
 				answersArray.add(answerJson);
 			}
 
+			String qType = "checkbox";
+			if(!question.getSubtype().equals("checkbox")){
+				qType = question.getQuestionType();
+			}
+
 			questionJson.addProperty("id", question.getReteId());
 			questionJson.addProperty("order", question.getOrderInConversation());
-			questionJson.addProperty("type", question.getQuestionType());
+			questionJson.addProperty("type", qType);
 			questionJson.addProperty("tag", question.getTag());
 			questionJson.addProperty("text", question.getText());
 			questionJson.addProperty("depth", question.getDepth());
