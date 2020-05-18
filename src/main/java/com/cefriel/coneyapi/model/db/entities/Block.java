@@ -25,6 +25,8 @@ public class Block {
 	private int order;
 	private int points;
 
+	private int optional;
+
 
 	public Block(){}
 
@@ -41,7 +43,7 @@ public class Block {
 
 	//ANSWER
 	public Block(int block_id, String block_type, String block_subtype, String text, int value,
-				 int order, String of_conversation, int points) {
+				 int order, String of_conversation, int points, int optional) {
 		this.block_id = block_id;
 		this.block_type = block_type;
 		this.block_subtype = block_subtype;
@@ -50,6 +52,7 @@ public class Block {
 		this.order = order;
 		this.of_conversation = of_conversation;
 		this.points = points;
+		this.optional = optional;
 	}
 
 	//TALK
@@ -166,8 +169,17 @@ public class Block {
 		this.visualization = qtype;
 	}
 
+	public int getOptional() {
+		return optional;
+	}
+
+	public void setOptional(int optional) {
+		this.optional = optional;
+	}
+
 	public JsonObject toJson() {
 		JsonObject blockJson = new JsonObject();
+
 		blockJson.addProperty("blockId", this.block_id);
 		blockJson.addProperty("type", this.block_type);
 		blockJson.addProperty("subtype", this.block_subtype);
@@ -179,6 +191,8 @@ public class Block {
 		blockJson.addProperty("value", this.value);
 		blockJson.addProperty("order", this.order);
 		blockJson.addProperty("points", this.points);
+		blockJson.addProperty("optional", this.optional);
+
 		return blockJson;
 	}
 }

@@ -120,10 +120,10 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 						  String image_url, String of_conversation);
 
 	@Query("CREATE (b:Block {block_id: {0}, block_type: \"Answer\", block_subtype: {1}, " +
-			"text: {2}, value: {3}, order: {4}, of_conversation: {5}, points: {6}})" +
+			"text: {2}, value: {3}, order: {4}, of_conversation: {5}, points: {6}, optional: {7}})" +
 			"RETURN b.block_id")
 	String uploadAnswerNode(int blockId, String block_subtype, String text, int value, int order,
-							String of_conversation, int points);
+							String of_conversation, int points, int optional);
 
 	@Query("MATCH (a:Block {block_id: {0}, of_conversation: {2}}),(b:Block {block_id: {1}, of_conversation: {2}})" +
 			" CREATE (a)-[r:LEADS_TO]->(b)" +

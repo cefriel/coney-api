@@ -567,6 +567,12 @@ public class ConversationService {
 				int blockScaleNumber = 0;
 				int blockOrder = 0;
 				int lastBlockScaleNumber = 0;
+
+				int optional = 0;
+				try {
+					optional = data_obj.get("optional").getAsInt();
+				} catch (Exception ignored) {}
+
 				int none = 0;
 				if (blockSubtype.equals("multiple")) {
 					long temp_int = Long.parseLong(data_obj.get("value").getAsString());
@@ -604,16 +610,16 @@ public class ConversationService {
 				}
 
 				if(checkboxes.size() < 1) {
-					Block n = new Block(nodeId, blockType, blockSubtype, blockText, blockScaleNumber, blockOrder, convId, blockPoints);
+					Block n = new Block(nodeId, blockType, blockSubtype, blockText, blockScaleNumber, blockOrder, convId, blockPoints, optional);
 					nodeList.add(n);
 				} else {
 					int tmpOrder = 0;
 					for(String box : checkboxes){
 						Block n;
 						if(box.contains("----")){
-							n = new Block(nodeId, blockType, blockSubtype, box, lastBlockScaleNumber, tmpOrder, convId, blockPoints);
+							n = new Block(nodeId, blockType, blockSubtype, box, lastBlockScaleNumber, tmpOrder, convId, blockPoints, 0);
 						} else {
-							n = new Block(nodeId, blockType, blockSubtype, box, blockScaleNumber, tmpOrder, convId, blockPoints);
+							n = new Block(nodeId, blockType, blockSubtype, box, blockScaleNumber, tmpOrder, convId, blockPoints, 0);
 						}
 						nodeList.add(n);
 						tmpOrder ++;
@@ -699,7 +705,7 @@ public class ConversationService {
 
 				queryOutput = conversationRepository
 						.uploadAnswerNode(idToAdd, block.getBlockSubtype(), block.getText(), block.getValue(),
-								block.getOrder(), block.getOfConversation(), block.getPoints());
+								block.getOrder(), block.getOfConversation(), block.getPoints(), block.getOptional());
 
 			} else if(block.getBlockType().equals("Talk")){
 

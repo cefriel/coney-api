@@ -581,6 +581,7 @@ public class DataService {
             if(!"".equals(as.getQuestionType())){
                 type = as.getQuestionType();
             }
+
             //TODO fix
             String tmpOp = as.getOption();
             if(as.getAnswerType().equals("checkbox")){
