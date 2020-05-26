@@ -156,11 +156,19 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 
 	@Query("MATCH (c:Conversation {conv_id: {0}})," +
 			"(o:Block {of_conversation: {0}})-[:LEADS_TO]->(ob:Block) " +
-			"WHERE NOT (o)<-[:LEADS_TO]-(:Block)" +
+			"WHERE NOT (o)<-[:LEADS_TO]-(:Block) AND o.block_id>0 " +
 			"CREATE (c)-[:STARTS]->(o) " +
 			"RETURN c.conv_id " +
 			"LIMIT 1")
 	String createStartRelationship(String conversationId);
+
+	@Query("MATCH (c:Conversation {conv_id: {0}})," +
+			"(o:Block {of_conversation: {0}})-[:LEADS_TO]->(ob:Block) " +
+			"WHERE NOT (o)<-[:LEADS_TO]-(:Block)" +
+			"CREATE (c)-[:STARTS]->(o) AND o.block_id<0 " +
+			"RETURN c.conv_id " +
+			"LIMIT 1")
+	String createPreviewStartRelationship(String conversationId);
 
 
 	@Query("MATCH (b:Block {block_id: {1}, of_conversation:{0}}) MERGE (t:Tag {text:{2}})" +
@@ -217,4 +225,21 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 	@Query("Match (c:Conversation {conv_id:{0}})-[:STARTS|LEADS_TO*]->(b:Block) " +
 			"WHERE b.block_type={1} return DISTINCT b")
 	List<Block> getOrderedBlocksOfType(String conversationId, String blockType);
+
+
+	/*CHAT DATA*/
+	@Query("MATCH (c:Conversation {conv_id: {0}}) " +
+			"SET c.chat_image = {1} " +
+			"RETURN c.chat_image")
+	String setConversationChatImage(String conversationId, String chatImage);
+
+	@Query("MATCH (c:Conversation {conv_id: {0}}) " +
+			"SET c.chat_privacy_notice = {1} " +
+			"RETURN c.chat_privacy_notice")
+	String setConversationChatPrivacyNotice(String conversationId, String chatPrivacyNotice);
+
+	@Query("MATCH (c:Conversation {conv_id: {0}}) " +
+			"SET c.chat_intro_text = {1} " +
+			"RETURN c.chat_intro_text")
+	String setConversationChatText(String conversationId, String chatIntroText);
 }

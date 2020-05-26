@@ -203,7 +203,7 @@ public class ConversationService {
 		}
 		logger.info("[CONVERSATION] Edges uploaded, creating conversation starting node");
 
-		if(!createAndLinkConversation(conversationId)){
+		if(!createAndLinkConversation(conversationId, preview)){
 			logger.error("[CONVERSATION] ERROR: Failed to create conversation starting node");
 			revertChanges(conversationId);
 			return false;
@@ -487,6 +487,18 @@ public class ConversationService {
 		conversationRepository.setCustomerForDeletion(username);
 	}
 
+	public void saveChatDetails(String conversationId, String chatImage, String chatPrivacyNotice, String chatIntroText){
+ 		if(!chatImage.equals("")){
+ 			conversationRepository.setConversationChatImage(conversationId, chatImage);
+		}
+		if(!chatPrivacyNotice.equals("")){
+			conversationRepository.setConversationChatPrivacyNotice(conversationId, chatPrivacyNotice);
+		}
+		if(!chatIntroText.equals("")){
+			conversationRepository.setConversationChatText(conversationId, chatIntroText);
+		}
+	}
+
 	//Read JSON nodes, creates Node/Edge Objects and store them in ArrayLists
 	private boolean readData(JsonObject content, String convId){
 
@@ -728,7 +740,7 @@ public class ConversationService {
 	private boolean uploadQueryEdges(String conversationId){
 
 		boolean out = true;
-		logger.info("[CONVERSATION] Total edges: "+edgeList.size());
+		logger.info("[CONVERSATION] Total edges: " + edgeList.size());
 		for(Edge edge : edgeList) {
 			int start = edge.getStartId();
 			int end = edge.getEndId();
@@ -768,8 +780,16 @@ public class ConversationService {
 	}
 
 	//create conversation start node with all the properties
-	private boolean createAndLinkConversation(String convId){
-		String outCheck = conversationRepository.createStartRelationship(convId);
+	private boolean createAndLinkConversation(String convId, boolean prev){
+
+		String outCheck;
+		logger.info("Preview: "+prev);
+ 		if(prev){
+			outCheck = conversationRepository.createPreviewStartRelationship(convId);
+		} else {
+			outCheck = conversationRepository.createStartRelationship(convId);
+		}
+		logger.info("done: "+convId);
 		return outCheck.equals(convId);
 	}
 

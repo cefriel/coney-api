@@ -18,6 +18,9 @@ public class Conversation implements Comparable<Object> {
     private String status;
     private int access_level;
     private String lang;
+    private String chat_image;
+    private String chat_privacy_notice;
+    private String chat_intro_text;
 
     public Conversation() {
 		super();
@@ -71,6 +74,30 @@ public class Conversation implements Comparable<Object> {
         this.lang = lang;
     }
 
+    public String getChat_image() {
+        return chat_image;
+    }
+
+    public void setChat_image(String chat_image) {
+        this.chat_image = chat_image;
+    }
+
+    public String getChat_privacy_notice() {
+        return chat_privacy_notice;
+    }
+
+    public void setChat_privacy_notice(String chat_privacy_notice) {
+        this.chat_privacy_notice = chat_privacy_notice;
+    }
+
+    public String getChat_intro_text() {
+        return chat_intro_text;
+    }
+
+    public void setChat_intro_text(String chat_intro_text) {
+        this.chat_intro_text = chat_intro_text;
+    }
+
     public int compareTo(Object o)
     {
         Conversation other = (Conversation) o;
@@ -83,6 +110,15 @@ public class Conversation implements Comparable<Object> {
         conversationJson.addProperty("title", this.conv_title);
         conversationJson.addProperty("status", this.status);
         conversationJson.addProperty("accessLevel", this.access_level);
+        return conversationJson;
+    }
+
+    public JsonObject toChatJson(){
+        JsonObject conversationJson = new JsonObject();
+        conversationJson.addProperty("conversationId", this.conv_id);
+        conversationJson.addProperty("chat_privacy_notice", this.chat_privacy_notice);
+        conversationJson.addProperty("chat_image", this.chat_image);
+        conversationJson.addProperty("chat_intro_text", this.chat_intro_text);
         return conversationJson;
     }
     

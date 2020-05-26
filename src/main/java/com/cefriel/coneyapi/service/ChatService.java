@@ -397,4 +397,13 @@ public class ChatService {
             return b.getText();
         }
     }
+
+    public String getConversationDetails(String conversationId){
+        Conversation c = chatRepository.getConversationById(conversationId);
+        String result = "";
+        try{
+            result = c.toChatJson().toString();
+        } catch(Exception ignored){}
+        return result;
+    }
 }

@@ -208,4 +208,20 @@ public class ChatController {
 
         return langList;
     }
+
+    @ApiOperation(value = "Returns available details of a specific conversation")
+    @RequestMapping(value = "/getConversationDetails", method = RequestMethod.GET)
+    public String getConversationDetails(@RequestParam(value = "conversationId") String conversationId)
+            throws ResourceNotFoundException {
+
+        String result;
+        try{
+            result = chatService.getConversationDetails(conversationId);
+        } catch (Exception e){
+            logger.error("[CHAT] No languages found");
+            throw new ResourceNotFoundException("No languages found");
+        }
+
+        return result;
+    }
 }

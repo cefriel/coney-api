@@ -417,6 +417,8 @@ public class ConversationController {
 		String status = json.get("status").getAsString();
 		String title = json.get("title").getAsString();
 
+
+
 		String project = "";
 		if(commercial){
 			project = json.get("projectName").getAsString();
@@ -472,6 +474,21 @@ public class ConversationController {
 			}
 		}
 
+		String chatImage = "";
+		String chatPrivacyNotice = "";
+		String chatIntroText = "";
+		try{
+			chatImage = json.get("chatImage").getAsString();
+		} catch(Exception ignored){}
+		try{
+			chatPrivacyNotice = json.get("chatPrivacyNotice").getAsString();
+		} catch(Exception ignored){}
+		try{
+			chatIntroText = json.get("chatIntroText").getAsString();
+		} catch(Exception ignored){}
+		logger.info("Saving chat details");
+		conversationService.saveChatDetails(conversationId, chatImage, chatPrivacyNotice, chatIntroText);
+		logger.info("Chat details saved");
 		JsonObject res = new JsonObject();
 		res.addProperty("conversationId", conversationId);
 		res.addProperty("title", title);
