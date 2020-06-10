@@ -160,15 +160,32 @@ public class ChatController {
 
                     JsonObject ans = answers.get(i).getAsJsonObject();
                     int answer = ans.get("value").getAsInt();
+                    String cb_type = null; String other = "";
+                    try{
+                        cb_type = ans.get("type").getAsString();
+                        other = ans.get("text").getAsString();
+                    } catch (Exception ignored){}
+
                     if((i+1) == answers.size()){
-                        res = chatService.continueConversation(userId, blockId, type, answer+"", convId, sessionId, lang);
+
+                        if(cb_type!=null && cb_type.equals("other")){
+                            type = "checkbox_other";
+                        }
+                        res = chatService.continueConversation(userId, blockId, type, answer+"", convId, sessionId, lang, other);
+
                     } else {
+
+                        //to be removed
+                        if(cb_type!=null && cb_type.equals("other")){
+                            chatService.saveOtherCheckboxAnswer(userId, blockId, type, answer, convId, sessionId, other);
+                        }
+
                         chatService.saveCheckboxAnswer(userId, blockId, type, answer, convId, sessionId);
                     }
                 }
             } else {
                 String answer = json.get("answer").getAsString();
-                res = chatService.continueConversation(userId, blockId, type, answer, convId, sessionId, lang);
+                res = chatService.continueConversation(userId, blockId, type, answer, convId, sessionId, lang,"");
             }
         }
 

@@ -109,12 +109,12 @@ public class ChatService {
         if(block == null){
             return "no_firstblock";
         }
-
+        logger.info("[CHAT] First Block retrieved");
         block.setText(getBlockTranslation(block, conversationId, lang));
-
+        logger.info("[CHAT] Translation tested");
         JsonObject blockJson = block.toJson();
         blocksSequenceJson.add(blockJson);
-
+        logger.info("[CHAT] Proceeding with next blocks");
         List<Block> seq;
         if(!oldSession.equals("")){
             seq = getNextBlock(block.getBlockId(), userId, oldSession, block.getOfConversation(), true);
@@ -184,6 +184,19 @@ public class ChatService {
         block = chatRepository.getNextOfCheckboxAnswerBlock(userId, blockId, timestamp, answer, conversationId, session);
     }
 
+
+    public void saveOtherCheckboxAnswer(String userId, int blockId, String type, int answer,
+                                   String conversationId, String session, String text)
+            throws ParsingException, ResourceNotFoundException{
+        Block block;
+        Timestamp time = new Timestamp(System.currentTimeMillis());
+        String timestamp = sdf.format(time);
+        logger.info("[CHAT] Saving CB answer to question with id: " + blockId +
+                ", answer: "+answer+" - "+conversationId);
+
+        block = chatRepository.getNextOfCheckboxAnswerBlock(userId, blockId, timestamp, answer, conversationId, session, text);
+    }
+
     /*
     Gets userId, previous blockId, current answer (either value or text) and it's type, convId and session)
     Generate timestamp -> Saves answer based on type while getting next block
@@ -192,7 +205,7 @@ public class ChatService {
     Adds them to JSONArray
     */
     public String continueConversation(String userId, int blockId, String type, String answer,
-                                           String conversationId, String session, String lang)
+                                           String conversationId, String session, String lang, String other)
     throws ParsingException, ResourceNotFoundException{
 
         JsonObject resultJson = new JsonObject();
@@ -222,6 +235,10 @@ public class ChatService {
                 break;
             case "checkbox":
                 block = chatRepository.getNextOfCheckboxAnswerBlock(userId, blockId, timestamp, Integer.parseInt(answer), conversationId, session);
+                break;
+            case "checkbox_other":
+                block = chatRepository.getNextOfCheckboxAnswerBlock(userId, blockId, timestamp, Integer.parseInt(answer),
+                        conversationId, session, other);
                 break;
         }
 

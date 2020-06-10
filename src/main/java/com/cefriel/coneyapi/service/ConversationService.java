@@ -8,6 +8,7 @@ import com.cefriel.coneyapi.model.db.custom.UserProject;
 import com.cefriel.coneyapi.model.db.entities.Block;
 import com.cefriel.coneyapi.model.db.entities.Edge;
 import com.cefriel.coneyapi.model.db.entities.Tag;
+import com.cefriel.coneyapi.model.other.Checkbox;
 import com.cefriel.coneyapi.repository.ConversationRepository;
 import com.cefriel.coneyapi.utils.Utils;
 import com.google.gson.JsonArray;
@@ -509,7 +510,9 @@ public class ConversationService {
 				nodeId = nodeId * (-1);
 			}
 			conversationRepository.deletePreviewUserOfConv(convId);
-			ArrayList<String> checkboxes = new ArrayList<>();
+			// OLD --> ArrayList<String> checkboxes = new ArrayList<>();
+
+			ArrayList<Checkbox> checkboxes = new ArrayList<>();
 
 
 			String blockText = null;
@@ -599,10 +602,13 @@ public class ConversationService {
 					JsonArray boxes = data_obj.get("checkbox").getAsJsonArray();
 					for(int i = 0; i<boxes.size(); i++){
 						JsonObject box = boxes.get(i).getAsJsonObject();
+
+						//get the text
 						String text = box.get("v").getAsString();
+						String type = box.get("type").getAsString();
+						int order = box.get("order").getAsInt();
 
-
-						try{
+						/*try{
 							none = box.get("n").getAsInt();
 						} catch (Exception ignored){}
 
@@ -612,9 +618,10 @@ public class ConversationService {
 								lastBlockScaleNumber = box.get("value").getAsInt();
 							} catch(Exception ignored){	}
                         }
+						*/
 
-						if(!text.equals("")){
-							checkboxes.add(text);
+						if(!text.equals("") || type.equals("other")){
+							checkboxes.add(new Checkbox(text, type, order));
 						}
 
 					}
@@ -625,19 +632,13 @@ public class ConversationService {
 					Block n = new Block(nodeId, blockType, blockSubtype, blockText, blockScaleNumber, blockOrder, convId, blockPoints, optional);
 					nodeList.add(n);
 				} else {
-					int tmpOrder = 0;
-					for(String box : checkboxes){
+					for(Checkbox box : checkboxes){
 						Block n;
-						if(box.contains("----")){
-							n = new Block(nodeId, blockType, blockSubtype, box, lastBlockScaleNumber, tmpOrder, convId, blockPoints, 0);
-						} else {
-							n = new Block(nodeId, blockType, blockSubtype, box, blockScaleNumber, tmpOrder, convId, blockPoints, 0);
-						}
+						n = new Block(nodeId, blockType, blockSubtype, box.getText(), lastBlockScaleNumber,
+									box.getOrder(), convId, blockPoints, 0, box.getType());
 						nodeList.add(n);
-						tmpOrder ++;
 					}
 				}
-
 			}
 			else {
 				//QUESTION
@@ -714,10 +715,18 @@ public class ConversationService {
 
 			if(block.getBlockType().equals("Answer")){
 
+				if(block.getCheckbox_type().equals("")){
+					queryOutput = conversationRepository
+							.uploadAnswerNode(idToAdd, block.getBlockSubtype(), block.getText(), block.getValue(),
+									block.getOrder(), block.getOfConversation(), block.getPoints(), block.getOptional());
+				} else {
+					queryOutput = conversationRepository
+							.uploadCheckboxAnswerNode(idToAdd, block.getBlockSubtype(), block.getText(),
+									block.getValue(), block.getOrder(), block.getOfConversation(),
+									block.getPoints(), block.getOptional(), block.getCheckbox_type());
+				}
 
-				queryOutput = conversationRepository
-						.uploadAnswerNode(idToAdd, block.getBlockSubtype(), block.getText(), block.getValue(),
-								block.getOrder(), block.getOfConversation(), block.getPoints(), block.getOptional());
+
 
 			} else if(block.getBlockType().equals("Talk")){
 

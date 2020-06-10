@@ -27,6 +27,8 @@ public class Block {
 
 	private int optional;
 
+	private String checkbox_type;
+
 
 	public Block(){}
 
@@ -53,6 +55,21 @@ public class Block {
 		this.of_conversation = of_conversation;
 		this.points = points;
 		this.optional = optional;
+	}
+
+	//ANSWER CHECKBOX
+	public Block(int block_id, String block_type, String block_subtype, String text, int value,
+				 int order, String of_conversation, int points, int optional, String checkbox_type) {
+		this.block_id = block_id;
+		this.block_type = block_type;
+		this.block_subtype = block_subtype;
+		this.text = text;
+		this.value = value;
+		this.order = order;
+		this.of_conversation = of_conversation;
+		this.points = points;
+		this.optional = optional;
+		this.checkbox_type = checkbox_type;
 	}
 
 	//TALK
@@ -177,6 +194,10 @@ public class Block {
 		this.optional = optional;
 	}
 
+	public String getCheckbox_type() {
+		return checkbox_type == null ? "" : checkbox_type;
+	}
+
 	public JsonObject toJson() {
 		JsonObject blockJson = new JsonObject();
 
@@ -192,6 +213,10 @@ public class Block {
 		blockJson.addProperty("order", this.order);
 		blockJson.addProperty("points", this.points);
 		blockJson.addProperty("optional", this.optional);
+
+		if(this.checkbox_type!= null && !this.checkbox_type.equals("")){
+			blockJson.addProperty("checkboxType", this.checkbox_type);
+		}
 
 		return blockJson;
 	}
