@@ -60,8 +60,6 @@ public class ChatController {
 
         if(restart == 0 && userId != null && !userId.equals("") && noRepeat.equals("noRepeat")){
 
-            //insert session try
-
             logger.info("[CHAT] No-repeat check, looking for previous compilation");
             String finishedSession = chatService.wasTheConversationFinished(userId, conversationId);
             if(finishedSession != null){

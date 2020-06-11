@@ -1,10 +1,7 @@
 package com.cefriel.coneyapi.service;
 
 import com.cefriel.coneyapi.exception.ResourceNotFoundException;
-import com.cefriel.coneyapi.model.db.custom.AnswerBlock;
-import com.cefriel.coneyapi.model.db.custom.ConversationResponse;
-import com.cefriel.coneyapi.model.db.custom.QuestionBlock;
-import com.cefriel.coneyapi.model.db.custom.UserProject;
+import com.cefriel.coneyapi.model.db.custom.*;
 import com.cefriel.coneyapi.model.db.entities.Block;
 import com.cefriel.coneyapi.model.db.entities.Edge;
 import com.cefriel.coneyapi.model.db.entities.Tag;
@@ -415,8 +412,12 @@ public class ConversationService {
  			return "not_published";
 		}
 
- 		List<Block> talkBlocks = conversationRepository.getOrderedBlocksOfType(conversationId, "Talk");
- 		List<Block> questionBlocks = conversationRepository.getOrderedQuestions(conversationId);
+ 		List<TalkBlock> talkBlocks = conversationRepository.getOrderedTalkBlocks(conversationId);
+ 		Collections.sort(talkBlocks);
+
+ 		List<QuestionBlock> questionBlocks = conversationRepository.getOrderedQuestionsToPrint(conversationId);
+ 		Collections.sort(questionBlocks);
+
 		logger.info("[CONVERSATION] Exporting Language Translation CSV for conv "+conversationId);
 		String line = "block_id,type,text,translation";
 		StringBuilder sb = new StringBuilder();
@@ -426,7 +427,7 @@ public class ConversationService {
 
 		logger.info("[CONVERSATION] Adding "+talkBlocks.size() + " talk blocks");
 		//add talk blocks first
-		for(Block talkBlock: talkBlocks){
+		for(TalkBlock talkBlock: talkBlocks){
 			String tmpTalkText = talkBlock.getImageUrl();
 			if(tmpTalkText.equals("")){
 				tmpTalkText = talkBlock.getText();
@@ -437,7 +438,7 @@ public class ConversationService {
 		}
 
 		//add questions
-		for(Block questionBlock: questionBlocks){
+		for(QuestionBlock questionBlock: questionBlocks){
 
 			line = "" + questionBlock.getNeo4jId() +  ",\"" + "Question" + "\",\"" + questionBlock.getText() + "\",\"\"";
 			sb.append(line);
@@ -445,7 +446,7 @@ public class ConversationService {
 
 			//add answers
 			List<Block> answerBlocks = conversationRepository
-					.getAnswersToQuestion(questionBlock.getBlockId(), conversationId);
+					.getAnswersToQuestion(questionBlock.getReteId(), conversationId); //rete qui
 
 			for(Block answerBlock: answerBlocks){
 

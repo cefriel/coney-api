@@ -1,10 +1,7 @@
 package com.cefriel.coneyapi.repository;
 
 
-import com.cefriel.coneyapi.model.db.custom.AnswerBlock;
-import com.cefriel.coneyapi.model.db.custom.ConversationResponse;
-import com.cefriel.coneyapi.model.db.custom.QuestionBlock;
-import com.cefriel.coneyapi.model.db.custom.UserProject;
+import com.cefriel.coneyapi.model.db.custom.*;
 import com.cefriel.coneyapi.model.db.entities.Block;
 import com.cefriel.coneyapi.model.db.entities.Conversation;
 import com.cefriel.coneyapi.model.db.entities.Tag;
@@ -229,9 +226,12 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 	String uploadBlockTranslation(String conversationId, String lang, int block_id, String text );
 
 
-	@Query("Match (c:Conversation {conv_id:{0}})-[:STARTS|LEADS_TO*]->(b:Block) " +
-			"WHERE b.block_type={1} return DISTINCT b")
-	List<Block> getOrderedBlocksOfType(String conversationId, String blockType);
+	@Query("MATCH (c:Conversation {conv_id:{0}}), (b:Block {block_type:'Talk', of_conversation:{0}}), " +
+			"p = shortestPath((c)-[a:STARTS|LEADS_TO*]-(b)) " +
+			"RETURN id(b) as neo4jId, b.block_id as reteId, " +
+			"b.block_type as type, b.block_subtype as subtype, b.of_conversation as ofConversation, " +
+			"b.url as url, b.image_url as image_url, b.text as text, length(p) as depth")
+	List<TalkBlock> getOrderedTalkBlocks(String conversationId);
 
 
 	/*CHAT DATA*/
