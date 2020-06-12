@@ -17,18 +17,6 @@ public interface DataRepository extends Neo4jRepository<Conversation, Long> {
             "RETURN EXISTS ( (cust)-[wo:WORKS_ON]-(pr)-[bt]-(c) ) AND wo.access_level >= c.access_level")
     String hasUserPermission(String username, String conversationId);
 
-    /*OLD QUERY
-    @Query("MATCH (u:User)-[ans:ANSWERED]->(a:Block)<-[:LEADS_TO]" +
-            "-(q:Block {of_conversation: {0}}), (u)-[se:STARTEND]->(c:Conversation {conv_id: {0}}) " +
-            "WHERE se.session = ans.session " +
-            "OPTIONAL MATCH (q)-[:ABOUT]->(t:Tag) " +
-            "RETURN q.of_conversation AS conversation_id, u.user_id AS user, se.project_id as project_id, se.project_name as project_name," +
-            " t.text as tag, q.text as question, q.block_id as question_id, a.block_id as answer_id," +
-            "a.text as option, a.value as value, ans.value as free_answer, " +
-            "a.points as points, ans.timestamp as timestamp, ans.session as session, " +
-            "se.start_timestamp as start_timestamp, se.end_timestamp as end_timestamp, se.lang as language;")
-            */
-
     @Query("MATCH (a:Block {block_type:\"Answer\"})<-[:LEADS_TO]-(q:Block {of_conversation: {0}})  " +
             "OPTIONAL MATCH (u:User)-[ans:ANSWERED]->(a), (u)-[se:STARTEND]->(c:Conversation {conv_id: {0}}) " +
             "WHERE se.session = ans.session " +

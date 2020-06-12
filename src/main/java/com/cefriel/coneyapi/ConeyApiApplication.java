@@ -5,8 +5,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
 @EnableNeo4jRepositories("com.cefriel.neo4j.repository")
 public class ConeyApiApplication extends SpringBootServletInitializer {
 

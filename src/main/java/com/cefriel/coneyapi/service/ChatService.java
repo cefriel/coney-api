@@ -377,12 +377,21 @@ public class ChatService {
     }
 
     public boolean deletePreview(String conversationId, String session){
-        System.out.println(conversationId);
+
         String a = chatRepository.deletePreviewRelationships(session);
         String i = chatRepository.deletePreviewBlocks(conversationId);
-        logger.info("[CONVERSATION] Deleting all preview blocks");
+        logger.info("[CONVERSATION] Deleting all preview blocks for conv: "+conversationId);
 
         chatRepository.deletePreviewUserOfConv(conversationId);
+        return Boolean.valueOf(i) || Boolean.valueOf(a);
+    }
+
+    public boolean deleteAllPreviews(){
+        logger.info("[CONVERSATION] Deleting all preview blocks");
+
+        String a = chatRepository.deleteAllPreviewRelationships();
+        String i = chatRepository.deleteAllPreviewBlocks();
+
         return Boolean.valueOf(i) || Boolean.valueOf(a);
     }
 

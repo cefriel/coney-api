@@ -32,7 +32,7 @@ public class DataService {
         this.dataRepository = dataRepository;
     }
 
-    public String getAnswersOfConversation(String conversationId, boolean anonymize){
+    public String getAnswersOfConversation(String conversationId, boolean anonymize, boolean trimData){
 
         if(!hasUserPermission(conversationId)){
             return null;
@@ -44,7 +44,7 @@ public class DataService {
             return null;
         }
 
-        return answersToCSV(list, anonymize);
+        return answersToCSV(list, anonymize, trimData);
     }
 
 
@@ -563,7 +563,7 @@ public class DataService {
 	}
 
 	//returns a "csv-formatted" string
-    private String answersToCSV(List<AnswersResponse> list, boolean anonymize){
+    private String answersToCSV(List<AnswersResponse> list, boolean anonymize, boolean trimData){
 
         logger.info("[CONVERSATION] Exporting CSV");
 
@@ -575,6 +575,12 @@ public class DataService {
 
         for (AnswersResponse as : list)
         {
+
+            //deleting non-visited nodes.
+            if(trimData && as.getUser().equals("")){
+                continue;
+            }
+
 
             String type = "text";
 
@@ -592,9 +598,10 @@ public class DataService {
             }
 
             String user = as.getUser();
-            if(anonymize){
+            if(anonymize && !user.equals("")){
                 user = as.getAnonymizedUser();
             }
+
 
             line =  as.getQuestionId() + "," +
                     "\"" + csvString(as.getQuestion()) + "\"," +

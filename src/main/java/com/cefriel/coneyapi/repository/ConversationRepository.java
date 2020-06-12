@@ -158,6 +158,8 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 			"DELETE rel")
 	void deletePreviewUserOfConv(String conversationId);
 
+
+	//create conversation links
 	@Query("MATCH (c:Conversation {conv_id: {0}})," +
 			"(o:Block {of_conversation: {0}})-[:LEADS_TO]->(ob:Block) " +
 			"WHERE NOT (o)<-[:LEADS_TO]-(:Block) AND o.block_id>0 " +
@@ -175,6 +177,7 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 	String createPreviewStartRelationship(String conversationId);
 
 
+	//TAGS queries
 	@Query("MATCH (b:Block {block_id: {1}, of_conversation:{0}}) MERGE (t:Tag {text:{2}})" +
 			"CREATE (t)<-[rel:ABOUT]-(b)" +
 			"RETURN type(rel)")
@@ -188,6 +191,9 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 			"RETURN DISTINCT t")
 	List<Tag> searchTags(String conversationId);
 
+	//Get conversation structure
+
+	//Outdated
 	@Query("MATCH (c:Conversation {conv_id:{0}})-[:STARTS|LEADS_TO*]->(b:Block) " +
 			"WHERE b.block_type='Question' return DISTINCT b")
 	List<Block> getOrderedQuestions(String conversationId);
@@ -195,7 +201,7 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 	@Query("MATCH (b:Block {block_id: {0}, of_conversation: {1}})-[:LEADS_TO]->(a:Block {block_type: 'Answer'}) return a")
 	List<Block> getAnswersToQuestion(int blockId, String conversationId);
 
-	//TEST
+	//In use
 	@Query("MATCH (c:Conversation {conv_id:{0}}), (b:Block {block_type:'Question', of_conversation:{0}}), " +
 			"p = shortestPath((c)-[a:STARTS|LEADS_TO*]-(b)) " +
 			"RETURN id(b) as neo4jId, b.block_id as reteId, " +
@@ -215,16 +221,9 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 	@Query("MATCH (b:Block {of_conversation: {1}})-[:LEADS_TO]->(a:Block {block_type: 'Answer'}) " +
 			"WHERE id(b)={0} return count(a)")
 	int getAnswersOfBlockAmount(int blockId, String conversationId);
-	// TEST
-
 
 	@Query("MATCH (t:Tag)<-[:ABOUT]-(b:Block {block_id:{0}, of_conversation: {1}}) return t.text LIMIT 1")
 	String getTagOfBlock(int blockId, String conversationId);
-
-	@Query("MATCH (c:Conversation {conv_id:{0}}) MERGE (c)-[:HAS_TRANSLATION]->(t:Translation {lang:{1}}) " +
-			"MERGE (t)-[:HAS_TT_NODE]->(tt:TTNode {of_block:{2}}) SET tt.text={3} return tt.text")
-	String uploadBlockTranslation(String conversationId, String lang, int block_id, String text );
-
 
 	@Query("MATCH (c:Conversation {conv_id:{0}}), (b:Block {block_type:'Talk', of_conversation:{0}}), " +
 			"p = shortestPath((c)-[a:STARTS|LEADS_TO*]-(b)) " +
@@ -234,7 +233,12 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 	List<TalkBlock> getOrderedTalkBlocks(String conversationId);
 
 
-	/*CHAT DATA*/
+	//Translations
+	@Query("MATCH (c:Conversation {conv_id:{0}}) MERGE (c)-[:HAS_TRANSLATION]->(t:Translation {lang:{1}}) " +
+			"MERGE (t)-[:HAS_TT_NODE]->(tt:TTNode {of_block:{2}}) SET tt.text={3} return tt.text")
+	String uploadBlockTranslation(String conversationId, String lang, int block_id, String text );
+
+	/*CHAT interface DATA*/
 	@Query("MATCH (c:Conversation {conv_id: {0}}) " +
 			"SET c.chat_image = {1} " +
 			"RETURN c.chat_image")

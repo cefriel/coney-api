@@ -136,6 +136,19 @@ public interface ChatRepository extends Neo4jRepository<Block, Long> {
             "DELETE a RETURN count(a)>0")
     String deletePreviewRelationships(String session);
 
+    @Query("MATCH (b:User)-[a]->(z) " +
+            "WHERE b.user_id=\"preview\" " +
+            "DELETE a RETURN count(a)>0")
+    String deleteAllPreviewRelationships();
+
+    @Query("MATCH (b:Block) " +
+            "WHERE b.block_id < 0 " +
+            "DETACH DELETE b " +
+            "RETURN count(b)>0 ")
+    String deleteAllPreviewBlocks();
+
+
+
     @Query("MATCH (u:User {user_id: 'preview'})-[rel]->(c) " +
             "WHERE c.of_conversation={0} OR c.conv_id={0} " +
             "DELETE rel")
