@@ -378,7 +378,7 @@ public class ConversationService {
 	}
 
 	//uploads a given translation
-	public String uploadTranslation(String conversationId, String language, JsonArray translationBlocks){
+	public String uploadTranslation(String conversationId, String language, String title, JsonArray translationBlocks){
 
  		String res = "failed";
 		if(!hasUserPermission(conversationId)){
@@ -392,7 +392,7 @@ public class ConversationService {
  			String translation = joBlock.get("translation").getAsString();
 
  			if(!translation.equals("")){
- 				conversationRepository.uploadBlockTranslation(conversationId, language,
+ 				conversationRepository.uploadBlockTranslation(conversationId, language, title,
 						Integer.parseInt(blockId), translation);
 			}
  			res = "success";

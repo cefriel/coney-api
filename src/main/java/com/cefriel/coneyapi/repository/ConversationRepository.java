@@ -170,8 +170,8 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 
 	@Query("MATCH (c:Conversation {conv_id: {0}})," +
 			"(o:Block {of_conversation: {0}})-[:LEADS_TO]->(ob:Block) " +
-			"WHERE NOT (o)<-[:LEADS_TO]-(:Block)" +
-			"CREATE (c)-[:STARTS]->(o) AND o.block_id<0 " +
+			"WHERE NOT (o)<-[:LEADS_TO]-(:Block) AND o.block_id<0 " +
+			"CREATE (c)-[:STARTS]->(o) " +
 			"RETURN c.conv_id " +
 			"LIMIT 1")
 	String createPreviewStartRelationship(String conversationId);
@@ -234,9 +234,9 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 
 
 	//Translations
-	@Query("MATCH (c:Conversation {conv_id:{0}}) MERGE (c)-[:HAS_TRANSLATION]->(t:Translation {lang:{1}}) " +
-			"MERGE (t)-[:HAS_TT_NODE]->(tt:TTNode {of_block:{2}}) SET tt.text={3} return tt.text")
-	String uploadBlockTranslation(String conversationId, String lang, int block_id, String text );
+	@Query("MATCH (c:Conversation {conv_id:{0}}) MERGE (c)-[:HAS_TRANSLATION]->(t:Translation {lang:{1}, title:{2}}) " +
+			"MERGE (t)-[:HAS_TT_NODE]->(tt:TTNode {of_block:{3}}) SET tt.text={4} return tt.text")
+	String uploadBlockTranslation(String conversationId, String lang, String title, int block_id, String text );
 
 	/*CHAT interface DATA*/
 	@Query("MATCH (c:Conversation {conv_id: {0}}) " +

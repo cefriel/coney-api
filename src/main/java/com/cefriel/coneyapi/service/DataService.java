@@ -630,7 +630,7 @@ public class DataService {
     private String csvString(String answer) {
         if (answer == null)
             return "";
-        return answer.trim().replace("\n", "").replace("\r", "");
+        return answer.trim().replace("\n", "").replace("\r", "").replace("\"", "'");
     }
 
     private boolean hasUserPermission(String conversationId) {

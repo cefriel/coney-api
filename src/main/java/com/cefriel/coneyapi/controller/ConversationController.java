@@ -105,15 +105,23 @@ public class ConversationController {
 	@RequestMapping(value = "/uploadTranslation", method = RequestMethod.POST)
 	public boolean uploadTranslation(@RequestBody String translation) throws Exception{
 
-		JsonParser parser = new JsonParser();
-		JsonObject translationJson = (JsonObject) parser.parse(translation);
-		JsonArray translationBlocks = translationJson.get("blocks").getAsJsonArray();
-		String language = translationJson.get("language").getAsString();
-		String conversationId = translationJson.get("conversationId").getAsString();
+    	try{
+			JsonParser parser = new JsonParser();
+			JsonObject translationJson = (JsonObject) parser.parse(translation);
+			JsonArray translationBlocks = translationJson.get("blocks").getAsJsonArray();
+			String language = translationJson.get("language").getAsString();
+			String title = translationJson.get("title").getAsString();
+			String conversationId = translationJson.get("conversationId").getAsString();
 
-		String res = conversationService.uploadTranslation(conversationId, language, translationBlocks);
+			String res = conversationService.uploadTranslation(conversationId, language, title, translationBlocks);
 
-    	return true;
+			return true;
+
+		} catch (Exception e){
+    		logger.error("[ERROR] POST Json format not valid");
+    		throw new ParsingException("POST Json format not valid");
+		}
+
 	}
 
 

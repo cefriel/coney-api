@@ -1,5 +1,6 @@
 package com.cefriel.coneyapi.repository;
 
+import com.cefriel.coneyapi.model.db.custom.ConversationTranslation;
 import com.cefriel.coneyapi.model.db.entities.Block;
 import com.cefriel.coneyapi.model.db.entities.Conversation;
 import org.springframework.data.neo4j.annotation.Query;
@@ -115,11 +116,11 @@ public interface ChatRepository extends Neo4jRepository<Block, Long> {
     @Query("MATCH (c:Conversation {conv_id:{0}}) RETURN c.conv_title LIMIT 1")
     String getConversationTitle(String conversationId);
 
-    @Query("MATCH (c:Conversation {conv_id:{0}})-[:HAS_TRANSLATION]->(t:Translation) return t.lang")
-    List<String> getLanguagesOfConversation(String conversationId);
+    @Query("MATCH (c:Conversation {conv_id:{0}})-[:HAS_TRANSLATION]->(t:Translation) return t.lang as language, t.title as title")
+    List<ConversationTranslation> getLanguagesOfConversation(String conversationId);
 
-    @Query("MATCH (c:Conversation {conv_id:{0}}) return c.lang")
-    String getDefaultLanguageOfConversation(String conversationId);
+    @Query("MATCH (c:Conversation {conv_id:{0}}) return c.lang as language, c.conv_title as title")
+    ConversationTranslation getDefaultLanguageOfConversation(String conversationId);
 
     @Query("MATCH (c:Conversation {conv_id:{0}})-[:HAS_TRANSLATION]->(t:Translation {lang:{1}})-[:HAS_TT_NODE]->(tt:TTNode) " +
             "WHERE tt.of_block={2} return tt.text LIMIT 1")
@@ -146,8 +147,6 @@ public interface ChatRepository extends Neo4jRepository<Block, Long> {
             "DETACH DELETE b " +
             "RETURN count(b)>0 ")
     String deleteAllPreviewBlocks();
-
-
 
     @Query("MATCH (u:User {user_id: 'preview'})-[rel]->(c) " +
             "WHERE c.of_conversation={0} OR c.conv_id={0} " +

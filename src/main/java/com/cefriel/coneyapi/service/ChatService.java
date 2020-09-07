@@ -3,6 +3,7 @@ package com.cefriel.coneyapi.service;
 import com.cefriel.coneyapi.exception.MethodNotAllowedException;
 import com.cefriel.coneyapi.exception.ParsingException;
 import com.cefriel.coneyapi.exception.ResourceNotFoundException;
+import com.cefriel.coneyapi.model.db.custom.ConversationTranslation;
 import com.cefriel.coneyapi.model.db.entities.Block;
 import com.cefriel.coneyapi.model.db.entities.Conversation;
 import com.cefriel.coneyapi.repository.ChatRepository;
@@ -395,14 +396,16 @@ public class ChatService {
         return Boolean.valueOf(i) || Boolean.valueOf(a);
     }
 
-    public List<String> getLanguagesOfConversation(String conversationId){
-        List<String> languages = new ArrayList<>();
-        String defLang = chatRepository.getDefaultLanguageOfConversation(conversationId);
+    public JsonArray getLanguagesOfConversation(String conversationId){
+        JsonArray languages = new JsonArray();
+        ConversationTranslation defLang = chatRepository.getDefaultLanguageOfConversation(conversationId);
         logger.info("[CHAT] Default lang: "+defLang);
-        languages.add(defLang);
-        List<String> otherLangs = chatRepository.getLanguagesOfConversation(conversationId);
+        languages.add(defLang.toJson());
+        List<ConversationTranslation> otherLangs = chatRepository.getLanguagesOfConversation(conversationId);
         if(otherLangs!= null && otherLangs.size()!=0){
-            languages.addAll(otherLangs);
+            for(ConversationTranslation translation : otherLangs){
+                languages.add(translation.toJson());
+            }
         }
         return languages;
     }
