@@ -85,6 +85,10 @@ public class ChatController {
             }
         } else if(restart == 1){ //=restart
 
+            if(userId.contains("u_")){
+                userId = null;
+            }
+
             logger.info("[CHAT] Restarting the conversation, previous answers will be deleted with session " + session);
             chatService.deletePreviousAnswers(userId, conversationId, session);
 

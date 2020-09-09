@@ -42,7 +42,7 @@ public class Utils {
     }
 
     //changes the conversation "status" field in the saved json
-    public boolean changeStatusInJson(String path, String status){
+    public boolean changeStatusInJson(String path, String project, String status){
 
         String str_json;
 
@@ -55,7 +55,7 @@ public class Utils {
             json.addProperty("status", status);
             String name = json.get("title").getAsString();
 
-            saveJsonToFile(json, name);
+            saveJsonToFile(json, project, name);
         } catch (Exception e){
             str_json = null;
         }
@@ -65,12 +65,25 @@ public class Utils {
     }
 
     //Saves the json locally
-    public String saveJsonToFile(JsonObject json, String name) {
+    public String saveJsonToFile(JsonObject json, String project, String name) {
 
         String timestamp = new SimpleDateFormat("yyyyMMddHHmm").format(new Date());
-        String fileName = absolutePath+name+".txt";
-        String pathVersions = absolutePath + "versions/" + name + "/";
-        String fileNameVersioned = pathVersions + name + timestamp + ".txt";
+        String complete = "";
+
+        if(project!=null && !project.equals("")){
+            complete = project + "_" + name;
+        } else {
+            complete = name;
+        }
+        final String title = complete;
+
+        String fileName = absolutePath+title+".txt";
+        String pathVersions = absolutePath + "versions/" + title + "/";
+
+        String fileNameVersioned = pathVersions + title + timestamp + ".txt";
+
+
+
         // Create dir
         new File(pathVersions).mkdirs();
         
@@ -87,7 +100,7 @@ public class Utils {
 	            paths
 	                .filter(Files::isRegularFile)
 	                .map(p -> p.toFile())
-	                .filter((File p) -> p.getName().contains(name))
+	                .filter((File p) -> p.getName().contains(title))
 	                .sorted(getReverseLastModifiedComparator())
 	                .skip(10)
 	                .forEach(x -> ((File) x).delete());

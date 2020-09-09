@@ -79,12 +79,13 @@ public class ConversationController {
 
 	@ApiOperation(value="Returns a CSV with all the blocks for translation purposes")
 	@RequestMapping(value = "/getTranslationCSV", method = RequestMethod.GET)
-	public String getTranslationCSV(@RequestParam(value = "conversationId") String conversationId)
+	public String getTranslationCSV(@RequestParam(value = "conversationId") String conversationId,
+									@RequestParam(value = "language", required = false) String language)
 			throws ResourceNotFoundException, UserNotAuthorizedException, MethodNotAllowedException {
 
     	String res;
 		try {
-			res = conversationService.getLanguageTranslationCSV(conversationId);
+			res = conversationService.getLanguageTranslationCSV(conversationId, language);
 
 		} catch (Exception e) {
 			logger.error("[CONVERSATION] Conversation with ID: "+conversationId+" not found");
@@ -161,7 +162,8 @@ public class ConversationController {
 	@ApiOperation(value = "Sets conversation status to 'Unpublished'")
 	@RequestMapping(value = "/unpublishConversation", method = RequestMethod.GET)
 	public boolean unpublishConversationById(
-			@RequestParam(value = "conversationId") String conversationId)
+			@RequestParam(value = "conversationId") String conversationId,
+			@RequestParam(value = "project", required = false) String project)
 			throws ResourceNotFoundException, Exception {
 
     	if(!conversationService.isPublished(conversationId)){
@@ -178,7 +180,7 @@ public class ConversationController {
 		}
 
 		String json_url = conversationService.findJsonUrlByConversationId(conversationId);
-		if(!utils.changeStatusInJson(json_url, "unpublished")){
+		if(!utils.changeStatusInJson(json_url, project,"unpublished")){
 			logger.error("[CONVERSATION] Error, unable to change status in json");
 			throw new ResourceNotFoundException("Error, unable to change status in json");
 		}
@@ -263,7 +265,6 @@ public class ConversationController {
 			throw new ResourceNotFoundException("ERROR: failed to get load nodes for preview");
 		}
 
-
 		boolean check = conversationService.uploadNodesAndEdged(nodes, conversationId, true);
 
 		if(check){
@@ -303,36 +304,36 @@ public class ConversationController {
 		Utils utils = new Utils();
 		JsonParser parser = new JsonParser();
 		JsonObject json = (JsonObject) parser.parse(convRete);
-		String projectName = ""; String lang = "";
+		String projectName = null; String lang = "";
 		String conversationId = json.get("conversationId").getAsString();
 		String title = json.get("title").getAsString();
 		String status = json.get("status").getAsString();
 		int accessLevel = 0;
 
+		try{
+
+			//only for commercial use
+			if(commercial){
+				accessLevel = json.get("accessLevel").getAsInt();
+				projectName = json.get("projectName").getAsString();
+			}
+
+			lang = json.get("lang").getAsString();
+		} catch (Exception e){
+			logger.error("[CONVERSATION] Some properties were not set, returning.");
+			throw new ConflictException("Some properties were not set");
+		}
+
 		// check conversationId field
 		// if null -> save as new node
 		// else -> check for the status (if published I can't overwrite)
 		if (conversationId.equals("")) {	//SAVE AS NEW
+
 			//check for title existence
-			if (conversationService.titleNotExists(title, conversationId)) {
+			if (conversationService.titleNotExists(title, conversationId, projectName)) {
 
 				//generate id,
 				conversationId = utils.generateId();
-
-				//get the established access level
-				try{
-
-					//only for commercial use
-					if(commercial){
-						accessLevel = json.get("accessLevel").getAsInt();
-						projectName = json.get("projectName").getAsString();
-					}
-
-					lang = json.get("lang").getAsString();
-				} catch (Exception e){
-					logger.error("[CONVERSATION] Some properties were not set, returning.");
-					throw new ConflictException("Some properties were not set");
-				}
 
 
 				//try to update RETE JSON and save it locally
@@ -340,7 +341,7 @@ public class ConversationController {
 				try{
 					json.addProperty("status", "saved");
 					json.addProperty("conversationId", conversationId);
-					jsonUrl = utils.saveJsonToFile(json, title);
+					jsonUrl = utils.saveJsonToFile(json, projectName, title);
 				} catch (Exception e){
 					e.printStackTrace();
 					logger.error("[CONVERSATION] Unable to locally save the JSON file");
@@ -362,9 +363,10 @@ public class ConversationController {
 
 		} else if (status.equals("saved")) {  //SAVE OVERWRITE
 			// if it's already saved just doublecheck for the title (if if changed)
-			if (conversationService.titleNotExists(title, conversationId)) {
+			if (conversationService.titleNotExists(title, conversationId, projectName)) {
 
-				String jsonUrl = utils.saveJsonToFile(json, title);
+				String jsonUrl = utils.saveJsonToFile(json, projectName, title);
+
 				if(jsonUrl!=null){
 
 					convSaved = conversationService.createOrUpdateConversation(conversationId, title, jsonUrl);
@@ -427,7 +429,7 @@ public class ConversationController {
 
 
 
-		String project = "";
+		String project = null;
 		if(commercial){
 			project = json.get("projectName").getAsString();
 		}
@@ -453,7 +455,7 @@ public class ConversationController {
 					boolean check = conversationService.uploadNodesAndEdged(nodes, conversationId, false);
 					if(check){
 						json.addProperty("status", "published");
-						utils.saveJsonToFile(json, title);
+						utils.saveJsonToFile(json, project, title);
 						logger.info("[CONVERSATION] Status successfully set to PUBLISHED");
 					} else {
 						json.addProperty("status", "saved");
@@ -471,7 +473,7 @@ public class ConversationController {
 					throw new ResourceNotFoundException("Error, no conversation found with ID: "+conversationId);
 				} else {
 					json.addProperty("status", "published");
-					utils.saveJsonToFile(json, title);
+					utils.saveJsonToFile(json, project, title);
 					logger.info("[CONVERSATION] Status successfully set to PUBLISHED");
 				}
 

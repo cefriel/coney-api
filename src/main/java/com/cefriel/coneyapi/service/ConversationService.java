@@ -76,8 +76,15 @@ public class ConversationService {
 		return Boolean.valueOf(result);
 	}
 
-	public boolean titleNotExists(String convTitle, String conversationId){
-		String result = conversationRepository.findExistingTitle(convTitle, conversationId);
+	public boolean titleNotExists(String convTitle, String conversationId, String projectName){
+
+ 		String result;
+ 		if(projectName == null || projectName.equals("")){
+			result = conversationRepository.findExistingTitle(convTitle, conversationId);
+		} else {
+			result = conversationRepository.findExistingTitleWithProject(convTitle, conversationId, projectName);
+		}
+
 
 		if(Boolean.valueOf(result)){
 			try {
@@ -180,9 +187,9 @@ public class ConversationService {
 		}
 
 		logger.info("[CONVERSATION] Json loaded, reading nodes");
-		if(prev){
-			conversationRepository.deletePreviewBlocks(conversationId);
-		}
+
+		conversationRepository.deletePreviewBlocks(conversationId);
+
 
 
 		//first loads the nodes, than the edges and finally creates the starting node
@@ -229,7 +236,7 @@ public class ConversationService {
 	}
 
 	public boolean deletePreview(String conversationId, String session){
- 		System.out.println(conversationId);
+
 		String a = conversationRepository.deletePreviewRelationships(session);
  		String i = conversationRepository.deletePreviewBlocks(conversationId);
  		logger.info("[CONVERSATION] Deleting all preview blocks");
@@ -401,7 +408,7 @@ public class ConversationService {
 	}
 
 	//returns all the Talk blocks followed by all the Questions with their answers
-	public String getLanguageTranslationCSV(String conversationId){
+	public String getLanguageTranslationCSV(String conversationId, String language){
 
 		if(!hasUserPermission(conversationId)){
 			return "not_auth";
@@ -411,6 +418,8 @@ public class ConversationService {
  		if(!check.toLowerCase().contains("published")){
  			return "not_published";
 		}
+
+ 		String currentTranslation = "";
 
  		List<TalkBlock> talkBlocks = conversationRepository.getOrderedTalkBlocks(conversationId);
  		Collections.sort(talkBlocks);
@@ -426,13 +435,24 @@ public class ConversationService {
 
 
 		logger.info("[CONVERSATION] Adding "+talkBlocks.size() + " talk blocks");
+
 		//add talk blocks first
 		for(TalkBlock talkBlock: talkBlocks){
 			String tmpTalkText = talkBlock.getImageUrl();
 			if(tmpTalkText.equals("")){
 				tmpTalkText = talkBlock.getText();
 			}
-			line = "" + talkBlock.getNeo4jId() + ",\"" + "Talk" + "\",\"" + tmpTalkText + "\",\"\"";
+
+			line = "" + talkBlock.getNeo4jId() + ",\"" + "Talk" + "\",\"" + tmpTalkText + "\",";
+
+			if(language != null){
+				currentTranslation = conversationRepository.getBlockTranslation(conversationId, language , talkBlock.getNeo4jId());
+				if(currentTranslation != null){
+					line += "\""+ currentTranslation +"\"";
+				}
+			}
+
+
 			sb.append(line);
 			sb.append(System.getProperty("line.separator"));
 		}
@@ -455,6 +475,15 @@ public class ConversationService {
 					ansTxt = "NO TEXT ANSWER";
 				}
 				line = "" + answerBlock.getNeo4jId() + ",\"" + "Answer" + "\",\"" + ansTxt + "\",\"\"";
+
+				if(language != null){
+					currentTranslation = conversationRepository.getBlockTranslation(conversationId, language , answerBlock.getNeo4jId());
+					if(currentTranslation != null){
+						line += "\""+ currentTranslation +"\"";
+					}
+				}
+
+
 				sb.append(line);
 				sb.append(System.getProperty("line.separator"));
 			}

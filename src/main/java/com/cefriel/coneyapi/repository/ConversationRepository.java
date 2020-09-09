@@ -60,6 +60,12 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 			"RETURN count(c)>0")
 	String updateConversationStatus(String conversationId, String status);
 
+	@Query("MATCH (pr:Project {name: {2}})<-[bt:BELONGS_TO]-(conv:Conversation {conv_id: {1}})-[:BELONGS_TO]->(pr:Project)<-[:BELONGS_TO]-(c:Conversation) " +
+			"WHERE c.conv_title = {0} " +
+			"AND NOT c.conv_id = {1} " +
+			"RETURN count(c)>0")
+	String findExistingTitleWithProject(String title, String conversationId, String projectName);
+
 	@Query("MATCH (conv:Conversation {conv_id: {1}})-[:BELONGS_TO]->(pr:Project)<-[:BELONGS_TO]-(c:Conversation) " +
 			"WHERE c.conv_title = {0} " +
 			"AND NOT c.conv_id = {1} " +
@@ -232,10 +238,15 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 			"b.url as url, b.image_url as image_url, b.text as text, length(p) as depth")
 	List<TalkBlock> getOrderedTalkBlocks(String conversationId);
 
+	//gets translation through neo4jId
+	@Query("MATCH (c:Conversation {conv_id:{0}})-[:HAS_TRANSLATION]->(t:Translation {lang:{1}})-[:HAS_TT_NODE]->(tt:TTNode) " +
+				  "WHERE tt.of_block={2} return tt.text LIMIT 1")
+	String getBlockTranslation(String conversationId, String lang, long blockId);
+
 
 	//Translations
-	@Query("MATCH (c:Conversation {conv_id:{0}}) MERGE (c)-[:HAS_TRANSLATION]->(t:Translation {lang:{1}, title:{2}}) " +
-			"MERGE (t)-[:HAS_TT_NODE]->(tt:TTNode {of_block:{3}}) SET tt.text={4} return tt.text")
+	@Query("MATCH (c:Conversation {conv_id:{0}}) MERGE (c)-[:HAS_TRANSLATION]->(t:Translation {lang:{1}}) " +
+			"MERGE (t)-[:HAS_TT_NODE]->(tt:TTNode {of_block:{3}}) SET tt.text={4}, t.title={2} return tt.text")
 	String uploadBlockTranslation(String conversationId, String lang, String title, int block_id, String text );
 
 	/*CHAT interface DATA*/
