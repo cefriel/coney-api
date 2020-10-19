@@ -427,12 +427,20 @@ public class ChatService {
         }
     }
 
-    public String getConversationDetails(String conversationId){
-        Conversation c = chatRepository.getConversationById(conversationId);
-        String result = "";
+    public String getConversationDetails(String conversationId, boolean preview){
+        Conversation c;
+        if(preview){
+            c = chatRepository.getConversationPreviewById(conversationId);
+        } else {
+            c = chatRepository.getConversationById(conversationId);
+        }
+
+        String result;
         try{
             result = c.toChatJson().toString();
-        } catch(Exception ignored){}
+        } catch(Exception ignored){
+            result = "No conversation found";
+        }
         return result;
     }
 }

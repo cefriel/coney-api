@@ -60,23 +60,16 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 			"RETURN count(c)>0")
 	String updateConversationStatus(String conversationId, String status);
 
-	@Query("MATCH (pr:Project {name: {2}})<-[bt:BELONGS_TO]-(conv:Conversation {conv_id: {1}})-[:BELONGS_TO]->(pr:Project)<-[:BELONGS_TO]-(c:Conversation) " +
+	@Query("MATCH (c:Conversation) " +
 			"WHERE c.conv_title = {0} " +
-			"AND NOT c.conv_id = {1} " +
-			"RETURN count(c)>0")
-	String findExistingTitleWithProject(String title, String conversationId, String projectName);
-
-	@Query("MATCH (conv:Conversation {conv_id: {1}})-[:BELONGS_TO]->(pr:Project)<-[:BELONGS_TO]-(c:Conversation) " +
-			"WHERE c.conv_title = {0} " +
-			"AND NOT c.conv_id = {1} " +
-			"RETURN count(c)>0")
-	String findExistingTitle(String title, String conversationId);
+			"RETURN c.conv_id " +
+            "LIMIT 1")
+	String findExistingTitle(String title);
 
 	@Query("MATCH (b:Block) " +
 			"WHERE b.of_conversation={0} " +
 			"DETACH DELETE b")
 	void deleteConversationNodes(String conversationId);
-
 
 	@Query("MERGE (c:Conversation {conv_id: {0}}) " +
 			"SET c.conv_title= {1}, c.json_url= {2}, " +
@@ -246,8 +239,13 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 
 	//Translations
 	@Query("MATCH (c:Conversation {conv_id:{0}}) MERGE (c)-[:HAS_TRANSLATION]->(t:Translation {lang:{1}}) " +
+			"MERGE (t)-[:HAS_TT_NODE]->(tt:TTNode {of_block:{2}}) SET tt.text={3}, t.title={2} return tt.text")
+	String uploadBlockTranslation(String conversationId, String lang, int block_id, String text);
+
+	//Translations
+	@Query("MATCH (c:Conversation {conv_id:{0}}) MERGE (c)-[:HAS_TRANSLATION]->(t:Translation {lang:{1}}) " +
 			"MERGE (t)-[:HAS_TT_NODE]->(tt:TTNode {of_block:{3}}) SET tt.text={4}, t.title={2} return tt.text")
-	String uploadBlockTranslation(String conversationId, String lang, String title, int block_id, String text );
+	String uploadBlockTranslationWithTitle(String conversationId, String lang, String title, int block_id, String text );
 
 	/*CHAT interface DATA*/
 	@Query("MATCH (c:Conversation {conv_id: {0}}) " +

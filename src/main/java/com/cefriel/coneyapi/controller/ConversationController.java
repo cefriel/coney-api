@@ -304,11 +304,13 @@ public class ConversationController {
 		Utils utils = new Utils();
 		JsonParser parser = new JsonParser();
 		JsonObject json = (JsonObject) parser.parse(convRete);
-		String projectName = null; String lang = "";
+		String projectName = null;
+		String lang = "";
 		String conversationId = json.get("conversationId").getAsString();
 		String title = json.get("title").getAsString();
 		String status = json.get("status").getAsString();
 		int accessLevel = 0;
+        logger.info("[CONVERSATION] Saving conversation");
 
 		try{
 
@@ -319,22 +321,32 @@ public class ConversationController {
 			}
 
 			lang = json.get("lang").getAsString();
+
 		} catch (Exception e){
 			logger.error("[CONVERSATION] Some properties were not set, returning.");
 			throw new ConflictException("Some properties were not set");
 		}
 
-		// check conversationId field
+        logger.info("[CONVERSATION] Conversation data fetched");
+
+        // check conversationId field
 		// if null -> save as new node
 		// else -> check for the status (if published I can't overwrite)
 		if (conversationId.equals("")) {	//SAVE AS NEW
 
+            String oldPr = conversationService.titleNotExists(title, "");
 			//check for title existence
-			if (conversationService.titleNotExists(title, conversationId, projectName)) {
+			if (oldPr != null) {
 
+                logger.info("[CONVERSATION] Old Project: " + oldPr + ", new project: " + projectName);
+
+                if (oldPr.equals(projectName)) {
+                    logger.error("[CONVERSATION] Another document with this title already exists");
+                    throw new ConflictException("The title inserted already exists");
+                }
+            }
 				//generate id,
 				conversationId = utils.generateId();
-
 
 				//try to update RETE JSON and save it locally
 				String jsonUrl;
@@ -356,14 +368,14 @@ public class ConversationController {
 					convSaved = conversationService.createOrUpdateNewOpenConversation(conversationId, title, jsonUrl, lang);
 				}
 
-			} else {
-				logger.error("[CONVERSATION] Another document with this title already exists");
-				throw new ConflictException("The title inserted already exists");
-			}
+
 
 		} else if (status.equals("saved")) {  //SAVE OVERWRITE
+
+            logger.info("[CONVERSATION] Conversation saved, checking title ");
+
 			// if it's already saved just doublecheck for the title (if if changed)
-			if (conversationService.titleNotExists(title, conversationId, projectName)) {
+			if (conversationService.titleNotExists(title, conversationId) == null) {
 
 				String jsonUrl = utils.saveJsonToFile(json, projectName, title);
 
@@ -376,6 +388,7 @@ public class ConversationController {
 					throw new Exception("Errors saving the conversation's JSON file locally");
 				}
 				logger.info("[CONVERSATION] Conversation correctly overwritten ");
+
 			} else {
 				logger.error("[CONVERSATION] Another document with this title already exists");
 				throw new ConflictException("The title inserted already exists");

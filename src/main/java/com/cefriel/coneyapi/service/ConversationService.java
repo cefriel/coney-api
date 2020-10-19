@@ -76,24 +76,26 @@ public class ConversationService {
 		return Boolean.valueOf(result);
 	}
 
-	public boolean titleNotExists(String convTitle, String conversationId, String projectName){
+	public String titleNotExists(String convTitle, String conversationId){
+		logger.info("[CONVERSATION] Checking title existence");
+ 		String result = null;
+ 		String alt_conv;
+		alt_conv = conversationRepository.findExistingTitle(convTitle);
 
- 		String result;
- 		if(projectName == null || projectName.equals("")){
-			result = conversationRepository.findExistingTitle(convTitle, conversationId);
+		if(alt_conv == null){ return null; }
+
+		//if it finds a conversation, returns the ID
+		if(conversationId.equals("") && alt_conv.substring(0,2).equals("id")){
+
+			result = conversationRepository.getConversationProject(alt_conv);
+			logger.info("[CONVERSATION] Title found, returning linked project: " + result);
+
+		} else if(!alt_conv.equals(conversationId) && alt_conv.substring(0,2).equals("id")) {
+			return "stop";
 		} else {
-			result = conversationRepository.findExistingTitleWithProject(convTitle, conversationId, projectName);
+			logger.info("[CONVERSATION] Title not found");
 		}
-
-
-		if(Boolean.valueOf(result)){
-			try {
-				String path = conversationRepository.findJsonUrlByConversationId(conversationId);
-				utils.deleteFile(path);
-			} catch(Exception ignored){}
-		}
-
-		return !Boolean.valueOf(result);
+		return result;
 	}
 
 	public boolean createOrUpdateNewConversation(String conversationId, String title,
@@ -399,8 +401,14 @@ public class ConversationService {
  			String translation = joBlock.get("translation").getAsString();
 
  			if(!translation.equals("")){
- 				conversationRepository.uploadBlockTranslation(conversationId, language, title,
-						Integer.parseInt(blockId), translation);
+
+ 				if(!title.equals("")){
+					conversationRepository.uploadBlockTranslationWithTitle(conversationId, language, title,
+							Integer.parseInt(blockId), translation);
+				} else {
+					conversationRepository.uploadBlockTranslation(conversationId, language, Integer.parseInt(blockId),
+							translation);
+				}
 			}
  			res = "success";
 		}
