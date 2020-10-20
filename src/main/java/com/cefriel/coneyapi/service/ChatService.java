@@ -243,8 +243,27 @@ public class ChatService {
                 break;
         }
 
+        //SURVEY ENDED
         if(block == null){
-            return null;
+            logger.error("[CHAT] null next block, ending conversation");
+            block = new Block();
+            block.setBlockType("end");
+
+            time = new Timestamp(System.currentTimeMillis());
+            timestamp = sdf.format(time);
+
+            String ck = chatRepository.createEndRelationship(userId, conversationId, timestamp, session);
+            if(ck == null || ck.equals("")){
+                logger.error("[CHAT] Failed to create END relationship");
+            }
+            logger.info("[CHAT] End relationship created");
+
+
+            JsonObject endBlockJson = block.toJson();
+            blocksSequenceJson.add(endBlockJson);
+
+            resultJson.add("blocks", blocksSequenceJson);
+            return resultJson.toString();
         }
 
         block.setText(getBlockTranslation(block, conversationId, lang));

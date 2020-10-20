@@ -55,27 +55,26 @@ public interface ChatRepository extends Neo4jRepository<Block, Long> {
             "REMOVE a.end_timestamp")
     void deleteEndTimestamp(String userId, String session, String conversationId);
 
-    //TODO FIX WHEN LAST BLOCK IS ANSWER put merge
-    @Query("MATCH (u:User {user_id:{0}}),(prev {block_id:{1}})-[:LEADS_TO]->(o)-[:LEADS_TO]->(next) " +
-            "WHERE prev.of_conversation = {4} " +
+    @Query("MATCH (u:User {user_id:{0}}),(prev {block_id:{1}, of_conversation:{4}})-[:LEADS_TO]->(o) " +
+            "OPTIONAL MATCH (o)-[:LEADS_TO]->(next) " +
             "MERGE (u)-[a:ANSWERED {timestamp:{2}, value:{3}, session:{5}}]->(o) " +
             "RETURN next")
     Block getNextOfSingleAnswerBlock(String userId, int blockId, String timestamp, String answer, String conversationId, String session);
 
-    @Query("MATCH (u:User {user_id:{0}}),(prev {block_id:{1}})-[:LEADS_TO]->(o)-[:LEADS_TO]->(next) " +
-            "WHERE prev.of_conversation = {4} AND o.order = {3} " +
+    @Query("MATCH (u:User {user_id:{0}}),(prev {block_id:{1}, of_conversation:{4}})-[:LEADS_TO]->(o {order:{3}}) " +
+            "OPTIONAL MATCH (o)-[:LEADS_TO]->(next) " +
             "MERGE (u)-[a:ANSWERED {timestamp:{2}, session:{5}}]->(o) " +
             "RETURN next")
     Block getNextOfMultipleAnswerBlock(String userId, int blockId, String timestamp, int answer, String conversationId, String session);
 
-    @Query("MATCH (u:User {user_id:{0}}),(prev {block_id:{1}})-[:LEADS_TO]->(o)-[:LEADS_TO]->(next) " +
-            "WHERE prev.of_conversation = {4} AND o.order = {3} " +
+    @Query("MATCH (u:User {user_id:{0}}),(prev {block_id:{1}, of_conversation:{4}})-[:LEADS_TO]->(o {order:{3}) " +
+            "OPTIONAL MATCH (o)-[:LEADS_TO]->(next) " +
             "MERGE (u)-[a:ANSWERED {timestamp:{2}, session:{5}}]->(o) " +
             "RETURN next")
     Block getNextOfCheckboxAnswerBlock(String userId, int blockId, String timestamp, int answer, String conversationId, String session);
 
-    @Query("MATCH (u:User {user_id:{0}}),(prev {block_id:{1}})-[:LEADS_TO]->(o)-[:LEADS_TO]->(next) " +
-            "WHERE prev.of_conversation = {4} AND o.order = {3} " +
+    @Query("MATCH (u:User {user_id:{0}}),(prev {block_id:{1}, of_conversation:{4}})-[:LEADS_TO]->(o {order:{3}) " +
+            "OPTIONAL MATCH (o)-[:LEADS_TO]->(next) " +
             "MERGE (u)-[a:ANSWERED {timestamp:{2}, session:{5}, value: {6}}]->(o) " +
             "RETURN next")
     Block getNextOfCheckboxAnswerBlock(String userId, int blockId, String timestamp, int answer, String conversationId, String session, String other);
