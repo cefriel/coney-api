@@ -42,7 +42,7 @@ public class ChatService {
     Gets first node and all subsequent ones up until an Answer
     returns JSON(user:{}, session: {}, conversation:{}, blocks[block:{},...]
     */
-    public String beginConversation(String userId, String conversationId, String projectName, String projectId, String oldSession, String lang)
+    public String beginConversation(String userId, String conversationId, String meta1, String meta2, String oldSession, String lang)
             throws ResourceNotFoundException {
 
         JsonObject resultJson = new JsonObject();
@@ -96,7 +96,7 @@ public class ChatService {
 
         if(oldSession.equals("")) {
             resultJson.addProperty("session", session);
-            String ts = chatRepository.createStartRelationship(userId, conversationId, timestamp, session, projectName, projectId, lang);
+            String ts = chatRepository.createStartRelationship(userId, conversationId, timestamp, session, meta1, meta2, lang);
             logger.info("[CHAT] Start rel with timestamp and SessionId generated");
 
             if(("").equals(ts)){

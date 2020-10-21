@@ -28,8 +28,8 @@ public class ChatController {
     @ApiOperation(value = "Returns conversation data, user ID, session and all the blocks up until the first question")
     @RequestMapping(value = "/beginConversation", method = RequestMethod.GET)
     public String beginConversation(@RequestParam(value = "userId", required = false) String userId,
-                                    @RequestParam(value = "projectName", required = false) String projectName,
-                                    @RequestParam(value = "projectId", required = false) String projectId,
+                                    @RequestParam(value = "meta1", required = false) String meta1,
+                                    @RequestParam(value = "meta2", required = false) String meta2,
                                     @RequestParam(value = "noRepeat", required = false) String noRepeat,
                                     @RequestParam(value = "restart") int restart,
                                     @RequestParam(value = "session", required = false) String session,
@@ -45,7 +45,7 @@ public class ChatController {
             return chatService.getConversationTitle(conversationId);
         }
 
-        if(projectId == null || projectName == null){
+        if(meta1 == null || meta2 == null){
             logger.error("No project assigned");
             throw new MethodNotAllowedException("Can't start a chat without a project");
         }
@@ -99,7 +99,7 @@ public class ChatController {
         }
 
 
-        outcome = (chatService.beginConversation(userId, conversationId, projectName, projectId, oldSession, lang));
+        outcome = (chatService.beginConversation(userId, conversationId, meta1, meta2, oldSession, lang));
 
         switch (outcome) {
             case "no_converstion":

@@ -82,9 +82,9 @@ public interface ChatRepository extends Neo4jRepository<Block, Long> {
 
     @Query("MATCH (o:Conversation {conv_id:{1}}) " +
             "MERGE (u:User {user_id:{0}}) " +
-            "CREATE (u)-[a:STARTEND {start_timestamp:{2}, session:{3}, project_name: {4}, project_id: {5}, lang: {6}}]->(o) " +
+            "CREATE (u)-[a:STARTEND {start_timestamp:{2}, session:{3}, meta1: {4}, meta2: {5}, lang: {6}}]->(o) " +
             "RETURN a.start_timestamp;")
-    String createStartRelationship(String userId, String conversationId, String timestamp, String session, String projectName, String projectId, String lang);
+    String createStartRelationship(String userId, String conversationId, String timestamp, String session, String meta1, String meta2, String lang);
 
     @Query("MATCH (u:User {user_id:{0}})-[a:STARTEND]->(o:Conversation {conv_id:{1}}) " +
             "WHERE a.session={3}" +

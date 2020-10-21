@@ -21,8 +21,8 @@ public interface DataRepository extends Neo4jRepository<Conversation, Long> {
             "OPTIONAL MATCH (u:User)-[ans:ANSWERED]->(a), (u)-[se:STARTEND]->(c:Conversation {conv_id: {0}}) " +
             "WHERE se.session = ans.session " +
             "OPTIONAL MATCH (q)-[:ABOUT]->(t:Tag) " +
-            "RETURN q.of_conversation AS conversation_id, u.user_id AS user, se.project_id as project_id, " +
-            "se.project_name as project_name, t.text as tag, q.text as question, q.visualization as question_type, id(q) as question_id, " +
+            "RETURN q.of_conversation AS conversation_id, u.user_id AS user, se.meta1 as meta1, " +
+            "se.meta2 as meta2, t.text as tag, q.text as question, q.visualization as question_type, id(q) as question_id, " +
             "id(a) as answer_id, a.block_subtype as answer_type, a.text as option, a.value as value, ans.value as free_answer, a.points as points, " +
             "ans.timestamp as timestamp, ans.session as session, se.start_timestamp as start_timestamp, " +
             "se.end_timestamp as end_timestamp, se.lang as language;")
