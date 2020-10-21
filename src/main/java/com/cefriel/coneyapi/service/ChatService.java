@@ -410,9 +410,8 @@ public class ChatService {
         logger.info("[CONVERSATION] Deleting all preview blocks");
 
         String a = chatRepository.deleteAllPreviewRelationships();
-        String i = chatRepository.deleteAllPreviewBlocks();
 
-        return Boolean.valueOf(i) || Boolean.valueOf(a);
+        return Boolean.valueOf(a);
     }
 
     public JsonArray getLanguagesOfConversation(String conversationId){

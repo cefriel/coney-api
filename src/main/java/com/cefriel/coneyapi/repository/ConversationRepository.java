@@ -157,7 +157,6 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 			"DELETE rel")
 	void deletePreviewUserOfConv(String conversationId);
 
-
 	//create conversation links
 	@Query("MATCH (c:Conversation {conv_id: {0}})," +
 			"(o:Block {of_conversation: {0}})-[:LEADS_TO]->(ob:Block) " +
