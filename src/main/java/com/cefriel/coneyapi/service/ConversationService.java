@@ -526,7 +526,10 @@ public class ConversationService {
 		conversationRepository.setCustomerForDeletion(username);
 	}
 
-	public void saveChatDetails(String conversationId, String chatImage, String chatPrivacyNotice, String chatIntroText){
+	public void saveChatDetails(String conversationId, String chatImage, String chatPrivacyNotice, String chatIntroText,
+								String primaryColor, String secondaryColor, String textColor){
+
+ 		logger.info("[COLORSSSSSSSSSSS] -" + primaryColor + "-" + secondaryColor + "-" + textColor);
  		if(!chatImage.equals("")){
  			conversationRepository.setConversationChatImage(conversationId, chatImage);
 		}
@@ -535,6 +538,9 @@ public class ConversationService {
 		}
 		if(!chatIntroText.equals("")){
 			conversationRepository.setConversationChatText(conversationId, chatIntroText);
+		}
+		if(!primaryColor.equals("")){
+			conversationRepository.setConversationChatColors(conversationId, primaryColor, secondaryColor, textColor);
 		}
 	}
 

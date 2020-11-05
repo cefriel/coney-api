@@ -21,6 +21,9 @@ public class Conversation implements Comparable<Object> {
     private String chat_image;
     private String chat_privacy_notice;
     private String chat_intro_text;
+    private String chat_primary_color;
+    private String chat_secondary_color;
+    private String chat_text_color;
 
     public Conversation() {
 		super();
@@ -98,6 +101,30 @@ public class Conversation implements Comparable<Object> {
         this.chat_intro_text = chat_intro_text;
     }
 
+    public String getChat_primary_color() {
+        return chat_primary_color;
+    }
+
+    public void setChat_primary_color(String chat_primary_color) {
+        this.chat_primary_color = chat_primary_color;
+    }
+
+    public String getChat_secondary_color() {
+        return chat_secondary_color;
+    }
+
+    public void setChat_secondary_color(String chat_secondary_color) {
+        this.chat_secondary_color = chat_secondary_color;
+    }
+
+    public String getChat_text_color() {
+        return chat_text_color;
+    }
+
+    public void setChat_text_color(String chat_text_color) {
+        this.chat_text_color = chat_text_color;
+    }
+
     public int compareTo(Object o)
     {
         Conversation other = (Conversation) o;
@@ -119,6 +146,9 @@ public class Conversation implements Comparable<Object> {
         conversationJson.addProperty("chat_privacy_notice", this.chat_privacy_notice);
         conversationJson.addProperty("chat_image", this.chat_image);
         conversationJson.addProperty("chat_intro_text", this.chat_intro_text);
+        conversationJson.addProperty("chat_primary_color", this.chat_primary_color);
+        conversationJson.addProperty("chat_secondary_color", this.chat_secondary_color);
+        conversationJson.addProperty("chat_text_color", this.chat_text_color);
         return conversationJson;
     }
     

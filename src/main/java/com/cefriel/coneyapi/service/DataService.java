@@ -1,10 +1,13 @@
 package com.cefriel.coneyapi.service;
 
 import com.cefriel.coneyapi.model.db.custom.AnswersResponse;
+import com.cefriel.coneyapi.model.db.custom.QuestionBlock;
+import com.cefriel.coneyapi.model.db.custom.UserSession;
 import com.cefriel.coneyapi.model.db.entities.Block;
 import com.cefriel.coneyapi.repository.DataRepository;
 import com.cefriel.coneyapi.utils.RDFUtils;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,8 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
+
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -32,7 +37,7 @@ public class DataService {
         this.dataRepository = dataRepository;
     }
 
-    public String getAnswersOfConversation(String conversationId, boolean anonymize, boolean trimData){
+    public String getAnswersOfConversation(String conversationId, String simplify, boolean anonymize, boolean trimData){
 
         if(!hasUserPermission(conversationId)){
             return null;
@@ -44,9 +49,111 @@ public class DataService {
             return null;
         }
 
-        return answersToCSV(list, anonymize, trimData);
+        if(simplify.equals("true")){
+            return getSimplifiedAnswersOfConversation(conversationId, anonymize);
+        } else {
+            return answersToCSV(list, anonymize, trimData);
+        }
     }
 
+    public String getSimplifiedAnswersOfConversation(String conversationId, boolean anonymize){
+
+        List<AnswersResponse> answers = dataRepository.getAnswersOfConversation(conversationId);
+        List<QuestionBlock> questions = dataRepository.getOrderedQuestionsOfConversation(conversationId);
+        int [] questionIds = new int[questions.size()];
+        List<UserSession> users = dataRepository.getRespondentsOfConversation(conversationId);
+        String [] sessions = new String[users.size()];
+
+        String [][] resultMatrix = new String[users.size()][questions.size()];
+
+
+        int userIndex;
+        int questionIndex;
+
+        StringBuilder sb = new StringBuilder();
+        String line = "user,session,language,start_timestamp,end_timestamp,meta1,meta2";
+        sb.append(line);
+
+        for(int i = 0; i<users.size(); i++){//String user: users){
+            Arrays.fill(resultMatrix[i], "");
+            logger.info("[DATA] user: " + users.get(i));
+            resultMatrix[i][0] = users.get(i).getSession();
+            sessions[i] = users.get(i).getSession();
+        }
+
+        for(int i = 0; i<questions.size(); i++){//QuestionBlock question: questions){
+            logger.info("[DATA] question: " + questions.get(i).getText());
+            resultMatrix[0][i] = Integer.toString(questions.get(i).getNeo4jId());
+            questionIds[i] = questions.get(i).getNeo4jId();
+            sb.append(",");
+            sb.append(questions.get(i).getText());
+        }
+
+        sb.append(System.getProperty("line.separator"));
+        logger.info("[DATA] Users and questions gathered, CSV header: " + sb.toString());
+
+        for (int i = 0; i<answers.size(); i++){//AnswersResponse element : answers) {
+
+            AnswersResponse element = answers.get(i);
+
+            userIndex = ArrayUtils.indexOf(sessions, element.getSession());
+            questionIndex = ArrayUtils.indexOf(questionIds, element.getQuestionId());
+
+            logger.info("[DATA] questionType: "+element.getQuestionType());
+
+            String type = element.getQuestionType();
+            if(type==null || type.equals("")){
+                type = element.getAnswerType();
+            }
+
+            if(element.getSession().equals("") || type.equals("")
+             || userIndex == -1 || questionIndex == -1){
+                continue;
+            }
+
+            switch (type) {
+                case "text":
+                    resultMatrix[userIndex][questionIndex] = csvString(element.getFreeAnswer());
+                    break;
+                case "star":
+                    logger.info( resultMatrix[userIndex][questionIndex]);
+                    resultMatrix[userIndex][questionIndex] = ""+element.getValue();
+                    break;
+                case "checkbox":
+                    resultMatrix[userIndex][questionIndex] += "'" + csvString(element.getOption()) + "';";
+                    break;
+                default:
+                    resultMatrix[userIndex][questionIndex] = csvString(element.getOption());
+                    break;
+            }
+        }
+
+        logger.info("[DATA] Result matrix filled, parsing result");
+
+        for(int i=0; i<users.size(); i++){
+
+            sb.append(users.get(i).getUserId(anonymize));
+            sb.append(",");
+            sb.append(users.get(i).getSession());
+            sb.append(",");
+            sb.append(users.get(i).getLanguage());
+            sb.append(",");
+            sb.append(users.get(i).getStartTimestamp());
+            sb.append(",");
+            sb.append(users.get(i).getEndTimestamp());
+            sb.append(",");
+            sb.append(users.get(i).getMeta1());
+            sb.append(",");
+            sb.append(users.get(i).getMeta2());
+
+            for(int j=0; j<questions.size(); j++){
+                sb.append(",");
+                sb.append(resultMatrix[i][j]);
+            }
+            sb.append(System.getProperty("line.separator"));
+        }
+        return sb.toString();
+    }
 
 
     //TODO Export literals also in other languages
@@ -397,8 +504,8 @@ public class DataService {
                     factory.createIRI(base, surveyProcedureId)
             );
 
-            addTarget(model, factory, base, surveyCompletionId, l.getProjectId());
-            addTarget(model, factory, base, surveyCompletionId, l.getProjectName());
+            addTarget(model, factory, base, surveyCompletionId, l.getMeta1());
+            addTarget(model, factory, base, surveyCompletionId, l.getMeta2());
 
             if (l.getStartTimestamp() != null && !l.getStartTimestamp().equals(""))
 	            model.add(
@@ -567,7 +674,7 @@ public class DataService {
 
         logger.info("[CONVERSATION] Exporting CSV");
 
-        String line = "questionId,question,questionType,tag,option,value,freeAnswer,points,user,language,date,time,session,totalDuration,projectId,projectName";
+        String line = "questionId,question,questionType,tag,option,value,freeAnswer,points,user,language,date,time,session,totalDuration,meta1,meta2";
         StringBuilder sb = new StringBuilder();
         sb.append(line);
         sb.append(System.getProperty("line.separator"));
@@ -617,8 +724,8 @@ public class DataService {
                     as.getTime() + "," +
                     "\"" + as.getSession() + "\"," +
                     as.getDuration() + "," +
-                    "\"" + as.getProjectId() + "\"," +
-                    "\"" + csvString(as.getProjectName()) + "\"";
+                    "\"" + csvString(as.getMeta1()) + "\"," +
+                    "\"" + csvString(as.getMeta2()) + "\"";
 
             sb.append(line);
             sb.append(System.getProperty("line.separator"));
@@ -628,7 +735,7 @@ public class DataService {
     }
 
     private String csvString(String answer) {
-        if (answer == null)
+        if (answer == null || answer.equals(""))
             return "";
         return answer.trim().replace("\n", "").replace("\r", "").replace("\"", "'");
     }

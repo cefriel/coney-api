@@ -7,8 +7,8 @@ public class AnswersResponse {
 	
 	String conversation_id;
     String user;
-    String project_id;
-    String project_name;
+    String meta1;
+    String meta2;
     String tag;
     String question;
     String question_type;
@@ -47,20 +47,20 @@ public class AnswersResponse {
         return tag == null ? "" : tag;
     }
 
-    public void setProjectId(String projectId) {
-        this.project_id = projectId;
+    public void setMeta1(String meta1) {
+        this.meta1 = meta1;
     }
 
-    public String getProjectId() {
-        return project_id == null ? "" : project_id;
+    public String getMeta1() {
+        return meta1 == null ? "" : meta1;
     }
 
-    public void setProjectName(String projectName) {
-        this.project_name = projectName;
+    public void setMeta2(String meta2) {
+        this.meta2 = meta2;
     }
 
-    public String getProjectName() {
-        return project_name == null ? "" : project_name;
+    public String getMeta2() {
+        return meta2 == null ? "" : meta2;
     }
 
     public void setQuestion(String question) {

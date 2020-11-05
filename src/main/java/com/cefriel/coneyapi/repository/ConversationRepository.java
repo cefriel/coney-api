@@ -261,4 +261,9 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 			"SET c.chat_intro_text = {1} " +
 			"RETURN c.chat_intro_text")
 	String setConversationChatText(String conversationId, String chatIntroText);
+
+	@Query("MATCH (c:Conversation {conv_id: {0}}) " +
+			"SET c.chat_primary_color = {1},  c.chat_secondary_color = {2}, c.chat_text_color = {3} " +
+			"RETURN c.chat_primary_color")
+	String setConversationChatColors(String conversationId, String primary, String secondary, String text);
 }

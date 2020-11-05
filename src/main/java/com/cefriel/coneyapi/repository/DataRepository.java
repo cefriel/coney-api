@@ -1,12 +1,15 @@
 package com.cefriel.coneyapi.repository;
 
 import com.cefriel.coneyapi.model.db.custom.AnswersResponse;
+import com.cefriel.coneyapi.model.db.custom.QuestionBlock;
+import com.cefriel.coneyapi.model.db.custom.UserSession;
 import com.cefriel.coneyapi.model.db.entities.Block;
 import com.cefriel.coneyapi.model.db.entities.Conversation;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -48,4 +51,17 @@ public interface DataRepository extends Neo4jRepository<Conversation, Long> {
 
     @Query("MATCH (c:Conversation {conv_id:{0}}) return c.lang")
     String getDefaultLanguageOfConversation(String conversationId);
+
+    @Query("MATCH (c:Conversation {conv_id:{0}}), (b:Block {block_type:'Question', of_conversation:{0}}), " +
+            "p = shortestPath((c)-[a:STARTS|LEADS_TO*]-(b)) " +
+            "RETURN id(b) as neo4jId, b.block_id as reteId, " +
+            "b.block_type as type, b.block_subtype as subtype, b.of_conversation as ofConversation, " +
+            "b.visualization as questionType, b.text as text, length(p) as depth")
+
+    List<QuestionBlock> getOrderedQuestionsOfConversation(String conversationId);
+
+    @Query("MATCH (n {conv_id:{0}})<-[st:STARTEND]-(u:User) " +
+            "RETURN st.session as session, u.user_id as userId, st.start_timestamp as startTimestamp, " +
+            "st.end_timestamp as endTimestamp, st.lang as language, st.meta1 as meta1, st.meta2 as meta2")
+    ArrayList<UserSession> getRespondentsOfConversation(String conversationId);
 }

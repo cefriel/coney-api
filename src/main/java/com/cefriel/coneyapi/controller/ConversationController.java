@@ -500,6 +500,9 @@ public class ConversationController {
 		String chatImage = "";
 		String chatPrivacyNotice = "";
 		String chatIntroText = "";
+		String chatPrimaryColor = "";
+		String chatSecondaryColor = "";
+		String chatTextColor = "";
 		try{
 			chatImage = json.get("chatImage").getAsString();
 		} catch(Exception ignored){}
@@ -509,13 +512,20 @@ public class ConversationController {
 		try{
 			chatIntroText = json.get("chatIntroText").getAsString();
 		} catch(Exception ignored){}
+		try{
+			chatPrimaryColor = json.get("chatPrimaryColor").getAsString();
+			chatSecondaryColor = json.get("chatSecondaryColor").getAsString();
+			chatTextColor = json.get("chatTextColor").getAsString();
+		} catch(Exception ignored){}
+
 		logger.info("Saving chat details");
-		conversationService.saveChatDetails(conversationId, chatImage, chatPrivacyNotice, chatIntroText);
+		conversationService.saveChatDetails(conversationId, chatImage, chatPrivacyNotice, chatIntroText,
+				chatPrimaryColor, chatSecondaryColor, chatTextColor);
 		logger.info("Chat details saved");
 		JsonObject res = new JsonObject();
 		res.addProperty("conversationId", conversationId);
 		res.addProperty("title", title);
-		if(project!=""){res.addProperty("projectName", project);}
+		if(!project.equals("")){res.addProperty("projectName", project);}
 		res.addProperty("status", "published");
 		return res.toString();
 	}

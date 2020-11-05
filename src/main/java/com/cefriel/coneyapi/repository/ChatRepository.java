@@ -27,10 +27,6 @@ public interface ChatRepository extends Neo4jRepository<Block, Long> {
             "RETURN c LIMIT 1")
     Conversation getConversationPreviewById(String conversationId);
 
-    @Query("MATCH (c:Conversation {conv_id:{0}})<-[r:STARTEND {project_id:{1}}]-(u:User {user_id:{2}})" +
-            "RETURN count(r)")
-    int getStartCountForProject(String conversationId, String projectId, String userId);
-
     @Query("MATCH (c:Conversation {conv_id:{0}})-[:STARTS]->(n:Block)" +
             "RETURN n LIMIT 1")
     Block getFirstBlock(String conversationId);

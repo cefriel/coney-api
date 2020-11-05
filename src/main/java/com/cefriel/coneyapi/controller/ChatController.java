@@ -45,11 +45,6 @@ public class ChatController {
             return chatService.getConversationTitle(conversationId);
         }
 
-        if(meta1 == null || meta2 == null){
-            logger.error("No project assigned");
-            throw new MethodNotAllowedException("Can't start a chat without a project");
-        }
-
         if(noRepeat == null){
             noRepeat = "";
         }

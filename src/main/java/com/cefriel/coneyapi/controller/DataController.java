@@ -29,6 +29,7 @@ public class DataController {
     @RequestMapping(value = "/getAnswersOfConversation", method = RequestMethod.GET)
     public String getAnswersOfConversation(@RequestParam(value="conversationId") String conversationId,
                                            @RequestParam(value="trim", required=false) String trimData,
+                                           @RequestParam(value="simplify", required=false) String simplify,
                                            @RequestParam(value = "anonymize", required = false) String anonymize)
             throws ResourceNotFoundException, ParsingException, UserNotAuthorizedException {
 
@@ -41,8 +42,13 @@ public class DataController {
             trimData = "false";
         }
 
-        logger.info("[DATA] Answers to conversation: "+conversationId+" requested");
-        String res = dataService.getAnswersOfConversation(conversationId, Boolean.valueOf(anonymize), Boolean.valueOf(trimData));
+
+        if(simplify == null || (!simplify.equals("true") && !simplify.equals("false"))){
+            simplify = "false";
+        }
+
+        logger.info("[DATA] Answers to conversation: "+conversationId+" requested, mode: "+simplify);
+        String res = dataService.getAnswersOfConversation(conversationId, simplify, Boolean.valueOf(anonymize), Boolean.valueOf(trimData));
 
         if(res == null){
             logger.error("[DATA] No Answers found at this conversation ID");
