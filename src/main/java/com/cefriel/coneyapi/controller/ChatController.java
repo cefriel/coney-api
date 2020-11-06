@@ -151,12 +151,13 @@ public class ChatController {
 
         } else {
             if(type.equals("checkbox")){
-
+    logger.info("*********************** checkbox");
                 JsonArray answers = json.get("answer").getAsJsonArray();
                 for(int i = 0; i<answers.size(); i++){
-
+    logger.info("*********************** in loop");
                     JsonObject ans = answers.get(i).getAsJsonObject();
-                    int answer = ans.get("value").getAsInt();
+                    int answer = ans.get("order").getAsInt();
+    logger.info("*********************** order: "+answer);
                     String cb_type = null; String other = "";
                     try{
                         cb_type = ans.get("type").getAsString();
@@ -164,14 +165,14 @@ public class ChatController {
                     } catch (Exception ignored){}
 
                     if((i+1) == answers.size()){
-
+     logger.info("*********************** last one");
                         if(cb_type!=null && cb_type.equals("other")){
                             type = "checkbox_other";
                         }
                         res = chatService.continueConversation(userId, blockId, type, answer+"", convId, sessionId, lang, other);
 
                     } else {
-
+     logger.info("*********************** saving answer");
                         //to be removed
                         if(cb_type!=null && cb_type.equals("other")){
                             chatService.saveOtherCheckboxAnswer(userId, blockId, type, answer, convId, sessionId, other);

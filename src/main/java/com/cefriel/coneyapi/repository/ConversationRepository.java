@@ -122,10 +122,10 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 							String of_conversation, int points, int optional);
 
 	@Query("CREATE (b:Block {block_id: {0}, block_type: \"Answer\", block_subtype: {1}, " +
-			"text: {2}, value: {3}, order: {4}, of_conversation: {5}, points: {6}, optional: {7}, " +
+			"text: {2}, max_answers: {3}, order: {4}, of_conversation: {5}, points: {6}, optional: {7}, " +
 			"checkbox_type: {8}})" +
 			"RETURN b.block_id")
-	String uploadCheckboxAnswerNode(int blockId, String block_subtype, String text, int value, int order,
+	String uploadCheckboxAnswerNode(int blockId, String block_subtype, String text, int max_answers, int order,
 							String of_conversation, int points, int optional, String checkbox_type);
 
 	@Query("MATCH (a:Block {block_id: {0}, of_conversation: {2}}),(b:Block {block_id: {1}, of_conversation: {2}})" +

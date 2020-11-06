@@ -63,13 +63,13 @@ public interface ChatRepository extends Neo4jRepository<Block, Long> {
             "RETURN next")
     Block getNextOfMultipleAnswerBlock(String userId, int blockId, String timestamp, int answer, String conversationId, String session);
 
-    @Query("MATCH (u:User {user_id:{0}}),(prev {block_id:{1}, of_conversation:{4}})-[:LEADS_TO]->(o {order:{3}) " +
+    @Query("MATCH (u:User {user_id:{0}}),(prev {block_id:{1}, of_conversation:{4}})-[:LEADS_TO]->(o {order:{3}}) " +
             "OPTIONAL MATCH (o)-[:LEADS_TO]->(next) " +
             "MERGE (u)-[a:ANSWERED {timestamp:{2}, session:{5}}]->(o) " +
             "RETURN next")
     Block getNextOfCheckboxAnswerBlock(String userId, int blockId, String timestamp, int answer, String conversationId, String session);
 
-    @Query("MATCH (u:User {user_id:{0}}),(prev {block_id:{1}, of_conversation:{4}})-[:LEADS_TO]->(o {order:{3}) " +
+    @Query("MATCH (u:User {user_id:{0}}),(prev {block_id:{1}, of_conversation:{4}})-[:LEADS_TO]->(o {order:{3}}) " +
             "OPTIONAL MATCH (o)-[:LEADS_TO]->(next) " +
             "MERGE (u)-[a:ANSWERED {timestamp:{2}, session:{5}, value: {6}}]->(o) " +
             "RETURN next")

@@ -22,6 +22,7 @@ public class Block {
 	private String url;
 	private String image_url;
 	private int value;
+	private int max_answers;
 	private int order;
 	private int points;
 
@@ -58,15 +59,15 @@ public class Block {
 	}
 
 	//ANSWER CHECKBOX
-	public Block(int block_id, String block_type, String block_subtype, String text, int value,
+	public Block(int block_id, String block_type, String block_subtype, String text, int max_answers,
 				 int order, String of_conversation, int points, int optional, String checkbox_type) {
 		this.block_id = block_id;
 		this.block_type = block_type;
 		this.block_subtype = block_subtype;
 		this.text = text;
-		this.value = value;
 		this.order = order;
 		this.of_conversation = of_conversation;
+		this.max_answers = max_answers;
 		this.points = points;
 		this.optional = optional;
 		this.checkbox_type = checkbox_type;
@@ -198,6 +199,14 @@ public class Block {
 		return checkbox_type == null ? "" : checkbox_type;
 	}
 
+	public int getMax_answers() {
+		return max_answers;
+	}
+
+	public void setMax_answers(int max_answers) {
+		this.max_answers = max_answers;
+	}
+
 	public JsonObject toJson() {
 		JsonObject blockJson = new JsonObject();
 
@@ -210,6 +219,7 @@ public class Block {
 		blockJson.addProperty("url", this.url);
 		blockJson.addProperty("imageUrl", this.image_url);
 		blockJson.addProperty("value", this.value);
+		blockJson.addProperty("maxAnswers", this.max_answers);
 		blockJson.addProperty("order", this.order);
 		blockJson.addProperty("points", this.points);
 		blockJson.addProperty("optional", this.optional);

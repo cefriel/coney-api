@@ -427,7 +427,7 @@ public class ConversationService {
  			return "not_published";
 		}
 
- 		String currentTranslation = "";
+ 		String currentTranslation;
 
  		List<TalkBlock> talkBlocks = conversationRepository.getOrderedTalkBlocks(conversationId);
  		Collections.sort(talkBlocks);
@@ -505,6 +505,7 @@ public class ConversationService {
 
 	}
 
+
 	//changes the user's password
 	public String changeCustomerPassword(String username, String oldPassword, String newPassword){
 
@@ -529,7 +530,6 @@ public class ConversationService {
 	public void saveChatDetails(String conversationId, String chatImage, String chatPrivacyNotice, String chatIntroText,
 								String primaryColor, String secondaryColor, String textColor){
 
- 		logger.info("[COLORSSSSSSSSSSS] -" + primaryColor + "-" + secondaryColor + "-" + textColor);
  		if(!chatImage.equals("")){
  			conversationRepository.setConversationChatImage(conversationId, chatImage);
 		}
@@ -625,23 +625,23 @@ public class ConversationService {
 
 				int blockScaleNumber = 0;
 				int blockOrder = 0;
-				int lastBlockScaleNumber = 0;
+				int maxAnswers = 0;
 
 				int optional = 0;
 				try {
 					optional = data_obj.get("optional").getAsInt();
 				} catch (Exception ignored) {}
 
-				int none = 0;
 				if (blockSubtype.equals("multiple")) {
 					long temp_int = Long.parseLong(data_obj.get("value").getAsString());
 					blockScaleNumber = Math.toIntExact(temp_int);
 					temp_int = Long.parseLong(data_obj.get("sort").getAsString());
 					blockOrder = Math.toIntExact(temp_int);
+
 				} else if(blockSubtype.equals("checkbox")){
 
-				    long temp_int = Long.parseLong(data_obj.get("value").getAsString());
-                    blockScaleNumber = Math.toIntExact(temp_int);
+					long temp_int = Long.parseLong(data_obj.get("max_answer").getAsString());
+					maxAnswers = Math.toIntExact(temp_int);
 
 					JsonArray boxes = data_obj.get("checkbox").getAsJsonArray();
 					for(int i = 0; i<boxes.size(); i++){
@@ -651,18 +651,6 @@ public class ConversationService {
 						String text = box.get("v").getAsString();
 						String type = box.get("type").getAsString();
 						int order = box.get("order").getAsInt();
-
-						/*try{
-							none = box.get("n").getAsInt();
-						} catch (Exception ignored){}
-
-						if(none == 1){
-							text = "----"+text;
-							try{
-								lastBlockScaleNumber = box.get("value").getAsInt();
-							} catch(Exception ignored){	}
-                        }
-						*/
 
 						if(!text.equals("") || type.equals("other")){
 							checkboxes.add(new Checkbox(text, type, order));
@@ -678,11 +666,12 @@ public class ConversationService {
 				} else {
 					for(Checkbox box : checkboxes){
 						Block n;
-						n = new Block(nodeId, blockType, blockSubtype, box.getText(), lastBlockScaleNumber,
-									box.getOrder(), convId, blockPoints, 0, box.getType());
+						n = new Block(nodeId, blockType, blockSubtype, box.getText(), maxAnswers,
+								box.getOrder(), convId, blockPoints, 0, box.getType());
 						nodeList.add(n);
 					}
 				}
+
 			}
 			else {
 				//QUESTION
