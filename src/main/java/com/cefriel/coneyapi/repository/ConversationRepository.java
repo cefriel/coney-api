@@ -54,6 +54,14 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 			"RETURN true")
 	String deleteConversation(String conversationId);
 
+	@Query("MATCH (n:User) WHERE NOT (n)--() DELETE n")
+	String deleteIsolatedUsers();
+
+	@Query("MATCH (c:Conversation {conv_id:{0}})<-[ans:STARTEND]-(u:User) " +
+			"DELETE ans " +
+			"RETURN true")
+	String deleteConversationAnswers(String conversationId);
+
 	@Query("MATCH (c:Conversation) " +
 			"WHERE c.conv_id = {0} " +
 			"SET c.status = {1} " +
@@ -202,6 +210,7 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 	//In use
 	@Query("MATCH (c:Conversation {conv_id:{0}}), (b:Block {block_type:'Question', of_conversation:{0}}), " +
 			"p = shortestPath((c)-[a:STARTS|LEADS_TO*]-(b)) " +
+			"WHERE b.block_id > 0 " +
 			"RETURN id(b) as neo4jId, b.block_id as reteId, " +
 			"b.block_type as type, b.block_subtype as subtype, b.of_conversation as ofConversation, " +
 			"b.visualization as questionType, b.text as text, length(p) as depth")
@@ -225,6 +234,7 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 
 	@Query("MATCH (c:Conversation {conv_id:{0}}), (b:Block {block_type:'Talk', of_conversation:{0}}), " +
 			"p = shortestPath((c)-[a:STARTS|LEADS_TO*]-(b)) " +
+			"WHERE b.block_id > 0 " +
 			"RETURN id(b) as neo4jId, b.block_id as reteId, " +
 			"b.block_type as type, b.block_subtype as subtype, b.of_conversation as ofConversation, " +
 			"b.url as url, b.image_url as image_url, b.text as text, length(p) as depth")

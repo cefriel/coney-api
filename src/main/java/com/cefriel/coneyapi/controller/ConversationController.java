@@ -191,7 +191,7 @@ public class ConversationController {
 	}
 
 
-	// DELETE request
+	// DELETE requests
 	@ApiOperation(value = "Deletes a conversation")
 	@RequestMapping(value = "/deleteConversation", method = RequestMethod.DELETE)
 	public boolean deleteConversationById(@RequestParam(value = "conversationId") String conversationId,
@@ -225,6 +225,8 @@ public class ConversationController {
 					logger.info("[CONVERSATION] Failed to delete conversation from DB");
 				}
 
+				//also delete answers
+				conversationService.deleteConversationAnswers(conversationId);
 
 			} else {
 				logger.error("[CONVERSATION] Failed to delete conversation nodes and relationships, CANNOT delete conversation with ID: "+conversationId);
@@ -236,6 +238,24 @@ public class ConversationController {
 			throw new ParsingException("Status parameter not valid. Only allowed \"saved\" and \"published\"");
 		}
 		return false;
+	}
+
+	@ApiOperation(value = "Deletes a conversation")
+	@RequestMapping(value = "/deleteConversationAnswers", method = RequestMethod.DELETE)
+	public boolean deleteConversationAnswers(@RequestParam(value = "conversationId") String conversationId)
+			throws ResourceNotFoundException, MethodNotAllowedException, ParsingException {
+
+
+		boolean answersDeleted = conversationService.deleteConversationAnswers(conversationId);
+		if (answersDeleted) {
+			logger.info("[CONVERSATION] Answers of conversation with ID: "+conversationId+" correctly deleted");
+			return true;
+		} else {
+			logger.error("[CONVERSATION] Conversation with ID: "+conversationId+" not found. Cannot delete the answers.");
+			throw new ResourceNotFoundException(
+					"Cannot delete conversation; no conversations found with with ID: "+conversationId+"");
+		}
+
 	}
 
 

@@ -152,6 +152,17 @@ public class ConversationService {
     	return Boolean.valueOf(result);
 	}
 
+	public boolean deleteConversationAnswers(String conversationId){
+		if(!hasUserPermission(conversationId)){
+			return false;
+		}
+
+		String result = conversationRepository.deleteConversationAnswers(conversationId);
+		conversationRepository.deleteIsolatedUsers();
+		return Boolean.valueOf(result);
+
+	}
+
 	public List<Tag> searchTags(String convId){
  		return conversationRepository.searchTags(convId);
 	}
