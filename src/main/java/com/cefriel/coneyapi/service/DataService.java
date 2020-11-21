@@ -7,6 +7,7 @@ import com.cefriel.coneyapi.model.db.entities.Block;
 import com.cefriel.coneyapi.repository.DataRepository;
 import com.cefriel.coneyapi.utils.RDFUtils;
 
+import com.google.gson.JsonArray;
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +58,11 @@ public class DataService {
     }
 
     public String getSimplifiedAnswersOfConversation(String conversationId, boolean anonymize){
+
+        if(!hasUserPermission(conversationId)){
+            return "not_auth";
+        }
+
 
         List<AnswersResponse> answers = dataRepository.getAnswersOfConversation(conversationId);
         List<QuestionBlock> questions = dataRepository.getOrderedQuestionsOfConversation(conversationId);
@@ -155,6 +161,19 @@ public class DataService {
         return sb.toString();
     }
 
+    public String getRespondentsOfConversation(String conversationId){
+
+        if(!hasUserPermission(conversationId)){
+            return "not_auth";
+        }
+
+        List<UserSession> users = dataRepository.getRespondentsOfConversation(conversationId);
+        JsonArray usersArray = new JsonArray();
+        for (UserSession user : users) {
+            usersArray.add(user.toJson());
+        }
+        return usersArray.toString();
+    }
 
     //TODO Export literals also in other languages
     //Returns a "rdf-formatted" string for the blocks in a conversation

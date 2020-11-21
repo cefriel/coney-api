@@ -1,5 +1,6 @@
 package com.cefriel.coneyapi.model.db.custom;
 
+import com.google.gson.JsonObject;
 import org.springframework.data.neo4j.annotation.QueryResult;
 
 @QueryResult
@@ -77,4 +78,15 @@ public class UserSession {
     public void setLanguage(String language) {
         this.language = language;
     }
+    public JsonObject toJson() {
+        JsonObject blockJson = new JsonObject();
+
+        blockJson.addProperty("userId", this.userId);
+        blockJson.addProperty("session", this.session);
+        blockJson.addProperty("language", this.language);
+        blockJson.addProperty("endTimestamp", this.endTimestamp);
+
+        return blockJson;
+    }
+
 }

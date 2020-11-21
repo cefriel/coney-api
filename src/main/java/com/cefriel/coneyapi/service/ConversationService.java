@@ -158,7 +158,10 @@ public class ConversationService {
 		}
 
 		String result = conversationRepository.deleteConversationAnswers(conversationId);
-		conversationRepository.deleteIsolatedUsers();
+		try{
+			conversationRepository.deleteIsolatedUsers();
+		} catch(Exception ignored){}
+
 		return Boolean.valueOf(result);
 
 	}
@@ -480,6 +483,9 @@ public class ConversationService {
 		for(QuestionBlock questionBlock: questionBlocks){
 
 			line = "" + questionBlock.getNeo4jId() +  ",\"" + "Question" + "\",\"" + questionBlock.getText() + "\",\"\"";
+
+			String questionTranslation = conversationRepository.getBlockTranslation(conversationId, language , questionBlock.getNeo4jId());
+			line+="\""+ questionTranslation +"\"";
 			sb.append(line);
 			sb.append(System.getProperty("line.separator"));
 

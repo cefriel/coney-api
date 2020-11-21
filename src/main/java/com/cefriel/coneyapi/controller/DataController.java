@@ -68,6 +68,31 @@ public class DataController {
         return res;
     }
 
+    @ApiOperation(value = "Gets respondents to a specific conversation in json format")
+    @RequestMapping(value = "/getRespondentsOfConversation", method = RequestMethod.GET)
+    public String getRespondentsOfConversation(@RequestParam(value="conversationId") String conversationId)
+            throws ResourceNotFoundException, ParsingException, UserNotAuthorizedException {
+
+
+        logger.info("[DATA] Respondents for conversation: "+conversationId+" requested");
+        String res = dataService.getRespondentsOfConversation(conversationId);
+
+        if(res == null){
+            logger.error("[DATA] No Answers found at this conversation ID");
+            throw new ResourceNotFoundException("[DATA] No Answers found at this conversation ID");
+        }
+
+        if(res.equals("")){
+            logger.error("[DATA] Failed to convert response to json");
+            throw new ParsingException("[DATA] Failed to convert response to json");
+        }
+        if(res.equals("not_auth")){
+            logger.error("[DATA] User not authorized");
+            throw new UserNotAuthorizedException("[DATA] User not authorized");
+        }
+
+        return res;
+    }
     @ApiOperation(value = "Gets answers to a specific conversation in rdf format")
     @RequestMapping(value = "/getRDFOfAnswers", method = RequestMethod.GET)
     public String getRDFOfAnswers(@RequestParam(value="conversationId") String conversationId,
