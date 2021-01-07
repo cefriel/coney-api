@@ -228,7 +228,8 @@ public class ChatService {
         //saves answer and gets next block
         Block block = null;
         switch (type) {
-            case "single":
+            case "open":
+                logger.info("[CHAT] In Open, answer:"+answer);
                 block = chatRepository.getNextOfSingleAnswerBlock(userId, blockId, timestamp, answer, conversationId, session);
                 break;
             case "multiple":

@@ -53,7 +53,7 @@ public interface ChatRepository extends Neo4jRepository<Block, Long> {
 
     @Query("MATCH (u:User {user_id:{0}}),(prev {block_id:{1}, of_conversation:{4}})-[:LEADS_TO]->(o) " +
             "OPTIONAL MATCH (o)-[:LEADS_TO]->(next) " +
-            "MERGE (u)-[a:ANSWERED {timestamp:{2}, value:{3}, session:{5}}]->(o) " +
+            "MERGE (u)-[a:ANSWERED {timestamp:{2}, session:{5}, value: {3}}]->(o) " +
             "RETURN next")
     Block getNextOfSingleAnswerBlock(String userId, int blockId, String timestamp, String answer, String conversationId, String session);
 

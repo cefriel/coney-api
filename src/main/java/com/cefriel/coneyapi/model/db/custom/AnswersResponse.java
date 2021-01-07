@@ -17,6 +17,7 @@ public class AnswersResponse {
     String option;
     int answer_id;
     int value;
+    int order;
     int points;
     String free_answer;
     String timestamp;
@@ -88,6 +89,13 @@ public class AnswersResponse {
         return "";
     }
 
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
 
     public String getQuestionType() {
         return question_type == null ? "" : question_type;
@@ -223,6 +231,9 @@ public class AnswersResponse {
         int start_hour = Integer.parseInt(getStartTimestampDuration().split(":")[0]);
         int end_hour = Integer.parseInt(getEndTimestampDuration().split(":")[0]);
         int tot_hour = end_hour-start_hour;
+        if(end_hour<start_hour){
+            tot_hour = 24 - start_hour + end_hour;
+        }
 
         int start_min = Integer.parseInt(getStartTimestampDuration().split(":")[1]);
         int end_min = Integer.parseInt(getEndTimestampDuration().split(":")[1]);

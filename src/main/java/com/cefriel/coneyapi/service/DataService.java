@@ -693,7 +693,7 @@ public class DataService {
 
         logger.info("[CONVERSATION] Exporting CSV");
 
-        String line = "questionId,question,questionType,tag,option,value,freeAnswer,points,user,language,date,time,session,totalDuration,meta1,meta2";
+        String line = "questionId,question,questionType,tag,option,value,order,freeAnswer,points,user,language,date,time,session,totalDuration,meta1,meta2";
         StringBuilder sb = new StringBuilder();
         sb.append(line);
         sb.append(System.getProperty("line.separator"));
@@ -735,6 +735,7 @@ public class DataService {
                     "\"" + csvString(as.getTags()) + "\"," +
                     "\"" + csvString(as.getOption()) + "\"," +
                     as.getValue() + "," +
+                    as.getOrder() + "," +
                     "\"" + csvString(as.getFreeAnswer()) + "\"," +
                     as.getPoints() + "," +
                     "\"" + user + "\"," +
