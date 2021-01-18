@@ -76,26 +76,52 @@ public class ConversationService {
 		return Boolean.valueOf(result);
 	}
 
-	public String titleNotExists(String convTitle, String conversationId){
+	public boolean titleNotExists(String convTitle, String conversationId,
+								 String projectName, boolean commercial){
 		logger.info("[CONVERSATION] Checking title existence");
- 		String result = null;
- 		String alt_conv;
-		alt_conv = conversationRepository.findExistingTitle(convTitle);
+		logger.info("[CONVERSATION] Conv: "+convTitle+", pr: "+projectName + ", id: "+conversationId);
+ 		List<ConversationResponse> alt_conv_ids = conversationRepository.findExistingTitle(convTitle);
+		logger.info("[CONVERSATION] Titles size: "+alt_conv_ids.size());
+		//no titles found, always ok
+		if(alt_conv_ids == null || alt_conv_ids.size() == 0){
+			logger.info("[CONVERSATION] No other titles found, ok to save");
+			return true;
 
-		if(alt_conv == null){ return null; }
-
-		//if it finds a conversation, returns the ID
-		if(conversationId.equals("") && alt_conv.substring(0,2).equals("id")){
-
-			result = conversationRepository.getConversationProject(alt_conv);
-			logger.info("[CONVERSATION] Title found, returning linked project: " + result);
-
-		} else if(!alt_conv.equals(conversationId) && alt_conv.substring(0,2).equals("id")) {
-			return "stop";
-		} else {
-			logger.info("[CONVERSATION] Title not found");
+		//titles found and free version (i.e. no projects) -> always no
+		} else if(conversationId.equals("") && !commercial){
+			logger.error("[CONVERSATION] [ERROR] New conv free, found another with same title");
+			return false;
+		} else if(!commercial){
+			if(alt_conv_ids.size()>1 || !alt_conv_ids.get(0).getConversationId().equals(conversationId)){
+				logger.error("[CONVERSATION] [ERROR] Overwrite free, found another with same title but different id");
+				return false;
+			}
 		}
-		return result;
+
+		//this is where it's "commercial", check the ids
+
+		//if my conversation is new, check the project, if different than ok
+		for(ConversationResponse conversationResponse: alt_conv_ids){
+
+			if(conversationResponse.getProjectName().equals(projectName)){
+
+				logger.info("*********** id: "+conversationResponse.getConversationId());
+				if(conversationId.equals("")) {
+					//the conversation is new but I found another with the same title in the project
+					logger.error("[CONVERSATION] [ERROR] Title found with different ID (new)");
+					return false;
+				} else if(!conversationId.equals(conversationResponse.getConversationId())){
+					//the conversation is not new, I fount another one with the same title in the same project and the
+					//ID is different
+					logger.error("[CONVERSATION] [ERROR] Title found with different ID");
+					return false;
+				}
+
+			}
+		}
+
+
+		return true;
 	}
 
 	public boolean createOrUpdateNewConversation(String conversationId, String title,

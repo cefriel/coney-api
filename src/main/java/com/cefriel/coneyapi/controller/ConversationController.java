@@ -357,48 +357,42 @@ public class ConversationController {
 		// else -> check for the status (if published I can't overwrite)
 		if (conversationId.equals("")) {	//SAVE AS NEW
 
-            String oldPr = conversationService.titleNotExists(title, "");
+            boolean notExists = conversationService.titleNotExists(title, "", projectName, commercial);
 			//check for title existence
-			if (oldPr != null) {
-
-                logger.info("[CONVERSATION] Old Project: " + oldPr + ", new project: " + projectName);
-
-                if (oldPr.equals(projectName)) {
-                    logger.error("[CONVERSATION] Another document with this title already exists");
-                    throw new ConflictException("The title inserted already exists");
-                }
+			if (!notExists) {
+				logger.error("[CONVERSATION] Another document with this title already exists");
+				throw new ConflictException("The title inserted already exists");
             }
-				//generate id,
-				conversationId = utils.generateId();
 
-				//try to update RETE JSON and save it locally
-				String jsonUrl;
-				try{
-					json.addProperty("status", "saved");
-					json.addProperty("conversationId", conversationId);
-					jsonUrl = utils.saveJsonToFile(json, projectName, title);
-				} catch (Exception e){
-					e.printStackTrace();
-					logger.error("[CONVERSATION] Unable to locally save the JSON file");
-					throw new ConflictException("Unable to locally save the JSON file");
-				}
+			//generate id,
+			conversationId = utils.generateId();
 
-				//if the file was saved then create the corresponding node in Neo4j
-				if(jsonUrl!=null && commercial){
-					convSaved = conversationService.createOrUpdateNewConversation(conversationId, title, jsonUrl, projectName, accessLevel, lang);
-				} else if(jsonUrl != null){
-					//open case
-					convSaved = conversationService.createOrUpdateNewOpenConversation(conversationId, title, jsonUrl, lang);
-				}
+			//try to update RETE JSON and save it locally
+			String jsonUrl;
+			try{
+				json.addProperty("status", "saved");
+				json.addProperty("conversationId", conversationId);
+				jsonUrl = utils.saveJsonToFile(json, projectName, title);
+			} catch (Exception e){
+				e.printStackTrace();
+				logger.error("[CONVERSATION] Unable to locally save the JSON file");
+				throw new ConflictException("Unable to locally save the JSON file");
+			}
 
-
+			//if the file was saved then create the corresponding node in Neo4j
+			if(jsonUrl!=null && commercial) {
+				convSaved = conversationService.createOrUpdateNewConversation(conversationId, title, jsonUrl, projectName, accessLevel, lang);
+			} else if(jsonUrl != null) {
+				//open case
+				convSaved = conversationService.createOrUpdateNewOpenConversation(conversationId, title, jsonUrl, lang);
+			}
 
 		} else if (status.equals("saved")) {  //SAVE OVERWRITE
 
             logger.info("[CONVERSATION] Conversation saved, checking title ");
 
 			// if it's already saved just doublecheck for the title (if if changed)
-			if (conversationService.titleNotExists(title, conversationId) == null) {
+			if (conversationService.titleNotExists(title, conversationId, projectName, commercial)) {
 
 				String jsonUrl = utils.saveJsonToFile(json, projectName, title);
 

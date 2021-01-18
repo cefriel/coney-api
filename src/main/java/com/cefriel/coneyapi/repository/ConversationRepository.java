@@ -70,9 +70,10 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 
 	@Query("MATCH (c:Conversation) " +
 			"WHERE c.conv_title = {0} " +
-			"RETURN c.conv_id " +
-            "LIMIT 1")
-	String findExistingTitle(String title);
+			"OPTIONAL MATCH (c)-[:BELONGS_TO]->(p:Project) " +
+			"RETURN c.conv_title AS conversationTitle, c.conv_id AS conversationId, " +
+			"c.access_level AS accessLevel, c.status AS status, p.name AS projectName")
+	List<ConversationResponse> findExistingTitle(String title);
 
 	@Query("MATCH (b:Block) " +
 			"WHERE b.of_conversation={0} " +
