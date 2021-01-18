@@ -367,7 +367,7 @@ public class ConversationService {
 				logger.info("-"+ans.getNextQuestionId()+"-");
 
 				try {
-					answerJson.addProperty("nextQuestionId", ans.getNextQuestionId()); //int
+					answerJson.addProperty("nextQuestionId", conversationRepository.getNextBlockId(ans.getNeo4jId(), ans.getOfConversation())); //int
 				} catch(Exception e){
 					answerJson.addProperty("nextQuestionId", 0); //int
 				}
@@ -401,7 +401,8 @@ public class ConversationService {
 	}
 
 	//uploads a given translation
-	public String uploadTranslation(String conversationId, String language, String title, JsonArray translationBlocks){
+	public String uploadTranslation(String conversationId, String language, String title,
+									String introText, String privacyLink, JsonArray translationBlocks){
 
  		String res = "failed";
 		if(!hasUserPermission(conversationId)){
@@ -422,6 +423,13 @@ public class ConversationService {
 				} else {
 					conversationRepository.uploadBlockTranslation(conversationId, language, Integer.parseInt(blockId),
 							translation);
+				}
+
+ 				if(!privacyLink.equals("")){
+ 					conversationRepository.setTranslationPrivacyLink(conversationId, language, privacyLink);
+				}
+ 				if(!introText.equals("")){
+					conversationRepository.setTranslationIntroText(conversationId, language, introText);
 				}
 			}
  			res = "success";
@@ -471,6 +479,8 @@ public class ConversationService {
 				currentTranslation = conversationRepository.getBlockTranslation(conversationId, language , talkBlock.getNeo4jId());
 				if(currentTranslation != null){
 					line += "\""+ currentTranslation +"\"";
+				} else {
+					line+="\""+ "\"";
 				}
 			}
 
@@ -482,10 +492,14 @@ public class ConversationService {
 		//add questions
 		for(QuestionBlock questionBlock: questionBlocks){
 
-			line = "" + questionBlock.getNeo4jId() +  ",\"" + "Question" + "\",\"" + questionBlock.getText() + "\",\"\"";
+			line = "" + questionBlock.getNeo4jId() +  ",\"" + "Question" + "\",\"" + questionBlock.getText() + "\",";
 
 			String questionTranslation = conversationRepository.getBlockTranslation(conversationId, language , questionBlock.getNeo4jId());
-			line+="\""+ questionTranslation +"\"";
+			if(questionTranslation == null || questionTranslation.equals("") || questionTranslation.equals("null")){
+				line+="\""+ "\"";
+			} else {
+				line+="\""+ questionTranslation +"\"";
+			}
 			sb.append(line);
 			sb.append(System.getProperty("line.separator"));
 
@@ -499,12 +513,14 @@ public class ConversationService {
 				if(ansTxt == null || ansTxt.equals("")){
 					ansTxt = "NO TEXT ANSWER";
 				}
-				line = "" + answerBlock.getNeo4jId() + ",\"" + "Answer" + "\",\"" + ansTxt + "\",\"\"";
+				line = "" + answerBlock.getNeo4jId() + ",\"" + "Answer" + "\",\"" + ansTxt + "\",";
 
 				if(language != null){
 					currentTranslation = conversationRepository.getBlockTranslation(conversationId, language , answerBlock.getNeo4jId());
-					if(currentTranslation != null){
+					if(currentTranslation != null && !currentTranslation.equals("") && !currentTranslation.equals("null")){
 						line += "\""+ currentTranslation +"\"";
+					} else {
+						line+="\""+ "\"";
 					}
 				}
 

@@ -225,6 +225,11 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 			"a.value as value, a.text as text, a.order as order")//, nq.block_id as nextQuestionId LIMIT {2}")
 	List<AnswerBlock> getAnswersToQuestionToPrint(int blockId, String conversationId, int answersAmount);
 
+	@Query("MATCH (prev)-[:LEADS_TO]->(o) " +
+			"WHERE id(prev) = {0} AND prev.of_conversation = {1} " +
+			"RETURN o.block_id")
+	int getNextBlockId(int blockId, String conversationId);
+
 	@Query("MATCH (b:Block {of_conversation: {1}})-[:LEADS_TO]->(a:Block {block_type: 'Answer'}) " +
 			"WHERE id(b)={0} return count(a)")
 	int getAnswersOfBlockAmount(int blockId, String conversationId);
@@ -255,6 +260,19 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 	@Query("MATCH (c:Conversation {conv_id:{0}}) MERGE (c)-[:HAS_TRANSLATION]->(t:Translation {lang:{1}}) " +
 			"MERGE (t)-[:HAS_TT_NODE]->(tt:TTNode {of_block:{3}}) SET tt.text={4}, t.title={2} return tt.text")
 	String uploadBlockTranslationWithTitle(String conversationId, String lang, String title, int block_id, String text );
+
+
+	/*translation interface data*/
+	@Query("MATCH (c:Conversation {conv_id: {0}}) MERGE (c)-[:HAS_TRANSLATION]->(t:Translation {lang:{1}}) " +
+			"SET t.chat_privacy_notice = {2} " +
+			"RETURN t.chat_privacy_notice")
+	String setTranslationPrivacyLink(String conversationId, String lang, String chatPrivacyNotice);
+
+	@Query("MATCH (c:Conversation {conv_id: {0}}) MERGE (c)-[:HAS_TRANSLATION]->(t:Translation {lang:{1}}) " +
+			"SET t.chat_intro_text = {2} " +
+			"RETURN t.chat_intro_text")
+	String setTranslationIntroText(String conversationId, String lang, String chatIntroText);
+
 
 	/*CHAT interface DATA*/
 	@Query("MATCH (c:Conversation {conv_id: {0}}) " +

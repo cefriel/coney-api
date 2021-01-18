@@ -418,14 +418,22 @@ public class ChatService {
     public JsonArray getLanguagesOfConversation(String conversationId){
         JsonArray languages = new JsonArray();
         ConversationTranslation defLang = chatRepository.getDefaultLanguageOfConversation(conversationId);
-        logger.info("[CHAT] Default lang: "+defLang);
-        languages.add(defLang.toJson());
+        logger.info("[CHAT] Default lang: "+defLang.getLanguage());
+        boolean defaultOverwrite = false;
+
         List<ConversationTranslation> otherLangs = chatRepository.getLanguagesOfConversation(conversationId);
         if(otherLangs!= null && otherLangs.size()!=0){
             for(ConversationTranslation translation : otherLangs){
+                if(translation.getLanguage().equals(defLang.getLanguage())){
+                    defaultOverwrite = true;
+                }
                 languages.add(translation.toJson());
             }
         }
+        if(!defaultOverwrite){
+            languages.add(defLang.toJson());
+        }
+
         return languages;
     }
 

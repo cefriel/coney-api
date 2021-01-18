@@ -112,9 +112,12 @@ public class ConversationController {
 			JsonArray translationBlocks = translationJson.get("blocks").getAsJsonArray();
 			String language = translationJson.get("language").getAsString();
 			String title = translationJson.get("title").getAsString();
+			String privacyLink = translationJson.get("privacyLink").getAsString();
+			String introText = translationJson.get("introText").getAsString();
 			String conversationId = translationJson.get("conversationId").getAsString();
 
-			String res = conversationService.uploadTranslation(conversationId, language, title, translationBlocks);
+			String res = conversationService.uploadTranslation(conversationId, language, title,
+					introText, privacyLink, translationBlocks);
 
 			return true;
 

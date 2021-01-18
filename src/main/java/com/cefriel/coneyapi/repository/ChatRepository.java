@@ -112,10 +112,13 @@ public interface ChatRepository extends Neo4jRepository<Block, Long> {
     @Query("MATCH (c:Conversation {conv_id:{0}}) RETURN c.conv_title LIMIT 1")
     String getConversationTitle(String conversationId);
 
-    @Query("MATCH (c:Conversation {conv_id:{0}})-[:HAS_TRANSLATION]->(t:Translation) return t.lang as language, t.title as title")
+    @Query("MATCH (c:Conversation {conv_id:{0}})-[:HAS_TRANSLATION]->(t:Translation) " +
+            "return t.lang as language, t.title as title, t.chat_intro_text as introText," +
+            "t.chat_privacy_notice as privacyLink")
     List<ConversationTranslation> getLanguagesOfConversation(String conversationId);
 
-    @Query("MATCH (c:Conversation {conv_id:{0}}) return c.lang as language, c.conv_title as title")
+    @Query("MATCH (c:Conversation {conv_id:{0}}) return c.lang as language, c.conv_title as title, " +
+            "c.chat_intro_text as introText, c.chat_privacy_notice as privacyLink")
     ConversationTranslation getDefaultLanguageOfConversation(String conversationId);
 
     @Query("MATCH (c:Conversation {conv_id:{0}})-[:HAS_TRANSLATION]->(t:Translation {lang:{1}})-[:HAS_TT_NODE]->(tt:TTNode) " +
