@@ -254,26 +254,14 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 
 	//Translations
 	@Query("MATCH (c:Conversation {conv_id:{0}}) MERGE (c)-[:HAS_TRANSLATION]->(t:Translation {lang:{1}}) " +
-			"MERGE (t)-[:HAS_TT_NODE]->(tt:TTNode {of_block:{2}}) SET tt.text={3}, t.title={2} return tt.text")
+			"MERGE (t)-[:HAS_TT_NODE]->(tt:TTNode {of_block:{2}}) SET tt.text={3} return tt.text")
 	String uploadBlockTranslation(String conversationId, String lang, int block_id, String text);
-
-	//Translations
-	@Query("MATCH (c:Conversation {conv_id:{0}}) MERGE (c)-[:HAS_TRANSLATION]->(t:Translation {lang:{1}}) " +
-			"MERGE (t)-[:HAS_TT_NODE]->(tt:TTNode {of_block:{3}}) SET tt.text={4}, t.title={2} return tt.text")
-	String uploadBlockTranslationWithTitle(String conversationId, String lang, String title, int block_id, String text );
-
 
 	/*translation interface data*/
 	@Query("MATCH (c:Conversation {conv_id: {0}}) MERGE (c)-[:HAS_TRANSLATION]->(t:Translation {lang:{1}}) " +
-			"SET t.chat_privacy_notice = {2} " +
+			"SET t.chat_privacy_notice = {4}, t.chat_intro_text = {3}, t.title = {2} " +
 			"RETURN t.chat_privacy_notice")
-	String setTranslationPrivacyLink(String conversationId, String lang, String chatPrivacyNotice);
-
-	@Query("MATCH (c:Conversation {conv_id: {0}}) MERGE (c)-[:HAS_TRANSLATION]->(t:Translation {lang:{1}}) " +
-			"SET t.chat_intro_text = {2} " +
-			"RETURN t.chat_intro_text")
-	String setTranslationIntroText(String conversationId, String lang, String chatIntroText);
-
+	String setTranslationProperties(String conversationId, String lang, String title, String introText, String chatPrivacyLink);
 
 	/*CHAT interface DATA*/
 	@Query("MATCH (c:Conversation {conv_id: {0}}) " +

@@ -78,10 +78,7 @@ public class ConversationService {
 
 	public boolean titleNotExists(String convTitle, String conversationId,
 								 String projectName, boolean commercial){
-		logger.info("[CONVERSATION] Checking title existence");
-		logger.info("[CONVERSATION] Conv: "+convTitle+", pr: "+projectName + ", id: "+conversationId);
  		List<ConversationResponse> alt_conv_ids = conversationRepository.findExistingTitle(convTitle);
-		logger.info("[CONVERSATION] Titles size: "+alt_conv_ids.size());
 		//no titles found, always ok
 		if(alt_conv_ids == null || alt_conv_ids.size() == 0){
 			logger.info("[CONVERSATION] No other titles found, ok to save");
@@ -105,7 +102,6 @@ public class ConversationService {
 
 			if(conversationResponse.getProjectName().equals(projectName)){
 
-				logger.info("*********** id: "+conversationResponse.getConversationId());
 				if(conversationId.equals("")) {
 					//the conversation is new but I found another with the same title in the project
 					logger.error("[CONVERSATION] [ERROR] Title found with different ID (new)");
@@ -229,6 +225,7 @@ public class ConversationService {
 		}
 
 		logger.info("[CONVERSATION] Json loaded, reading nodes");
+		logger.info("[CONVERSATION] Deleting preview");
 
 		conversationRepository.deletePreviewBlocks(conversationId);
 
@@ -434,7 +431,12 @@ public class ConversationService {
 		if(!hasUserPermission(conversationId)){
 			return "not_auth";
 		}
+
 		logger.info("[CONVERSATION] Adding "+language+" translation to conversation: "+conversationId);
+
+		conversationRepository.setTranslationProperties(conversationId, language, title, introText, privacyLink);
+
+
  		for(JsonElement jsonBlock: translationBlocks){
  			JsonObject joBlock = jsonBlock.getAsJsonObject();
 
@@ -442,24 +444,13 @@ public class ConversationService {
  			String translation = joBlock.get("translation").getAsString();
 
  			if(!translation.equals("")){
-
- 				if(!title.equals("")){
-					conversationRepository.uploadBlockTranslationWithTitle(conversationId, language, title,
-							Integer.parseInt(blockId), translation);
-				} else {
-					conversationRepository.uploadBlockTranslation(conversationId, language, Integer.parseInt(blockId),
+				conversationRepository.uploadBlockTranslation(conversationId, language, Integer.parseInt(blockId),
 							translation);
-				}
-
- 				if(!privacyLink.equals("")){
- 					conversationRepository.setTranslationPrivacyLink(conversationId, language, privacyLink);
-				}
- 				if(!introText.equals("")){
-					conversationRepository.setTranslationIntroText(conversationId, language, introText);
-				}
 			}
+
  			res = "success";
 		}
+
  		return res;
 	}
 

@@ -21,7 +21,7 @@ public class PreviewDeleteTask {
             logger.info("initialized scheduled task");
     }
 
-    @Scheduled(cron = "0 30 1 1 * ?", zone="Europe/Rome")
+    @Scheduled(cron = "0 0 3 1 * ?", zone="Europe/Rome")
     public void reportCurrentTime() {
 
         chatService.deleteAllPreviews();

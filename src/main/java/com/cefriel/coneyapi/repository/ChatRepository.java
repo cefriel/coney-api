@@ -109,6 +109,12 @@ public interface ChatRepository extends Neo4jRepository<Block, Long> {
             "RETURN o")
     List<Block> getAnswerOfUser(String userId, String conversationId, String session, int blockId);
 
+    @Query("MATCH (u:User {user_id:{0}})-[st:STARTEND {session: {2}}]->(c:Conversation {conv_id:{1}}), " +
+            "(u)-[a:ANSWERED {session: {2}}]->(o:Block {block_id: {3}}) " +
+            "WHERE NOT EXISTS(st.end_timestamp) " +
+            "RETURN a.value")
+    String getFreeAnswerOfUser(String userId, String conversationId, String session, int blockId);
+
     @Query("MATCH (c:Conversation {conv_id:{0}}) RETURN c.conv_title LIMIT 1")
     String getConversationTitle(String conversationId);
 

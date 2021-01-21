@@ -317,6 +317,8 @@ public class ChatService {
         block.setText(getBlockTranslation(block, conversationId, lang));
         blocksSequenceJson.add(block.toJson());
         for(Block b : answerSequence){
+
+
             b.setText(getBlockTranslation(b, conversationId, lang));
             blocksSequenceJson.add(b.toJson());
         }
@@ -379,6 +381,7 @@ public class ChatService {
                 logger.info("[CHAT] Continuing old conversation, getting next with session "+ session);
                 List<Block> ansB = chatRepository.getAnswerOfUser(userId, conversationId, session, blockId);
 
+
                 if(ansB!= null && ansB.size()!= 0 && ansB.get(0) != null){
 
                     blockSequence.clear();
@@ -386,6 +389,14 @@ public class ChatService {
                     logger.info("[CHAT] Cont block " + ansB.get(0).getText());
                     for(Block ans : ansB){
                         ans.setBlockType("AnswerCont");
+
+                        if(ans.getBlockSubtype().equals("single")){
+                            String fa = chatRepository.getFreeAnswerOfUser(userId, conversationId, session, ans.getBlockId());
+                            if(fa!=null){
+                                ans.setText(fa);
+                            }
+
+                        }
                     }
 
                     blockSequence.addAll(ansB);
