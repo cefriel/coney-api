@@ -805,7 +805,7 @@ public class ConversationService {
 				} else {
 					queryOutput = conversationRepository
 							.uploadCheckboxAnswerNode(idToAdd, block.getBlockSubtype(), block.getText(),
-									block.getValue(), block.getOrder(), block.getOfConversation(),
+									block.getMax_answers(), block.getOrder(), block.getOfConversation(),
 									block.getPoints(), block.getOptional(), block.getCheckbox_type());
 				}
 
