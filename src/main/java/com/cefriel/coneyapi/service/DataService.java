@@ -57,6 +57,20 @@ public class DataService {
         }
     }
 
+    public String getOrderedQuestions(String conversationId){
+
+        if(!hasUserPermission(conversationId)){
+            return "not_auth";
+        }
+
+        List<QuestionBlock> questions = dataRepository.getOrderedQuestionsOfConversation(conversationId);
+        JsonArray questionsArray = new JsonArray();
+        for(QuestionBlock question: questions){
+            questionsArray.add(question.toJson());
+        }
+        return questionsArray.toString();
+    }
+
     public String getSimplifiedAnswersOfConversation(String conversationId, boolean anonymize){
 
         if(!hasUserPermission(conversationId)){
@@ -98,22 +112,20 @@ public class DataService {
         sb.append(System.getProperty("line.separator"));
         logger.info("[DATA] Users and questions gathered, CSV header: " + sb.toString());
 
-        for (int i = 0; i<answers.size(); i++){//AnswersResponse element : answers) {
-
-            AnswersResponse element = answers.get(i);
+        for (AnswersResponse element : answers) {//AnswersResponse element : answers) {
 
             userIndex = ArrayUtils.indexOf(sessions, element.getSession());
             questionIndex = ArrayUtils.indexOf(questionIds, element.getQuestionId());
 
-            logger.info("[DATA] questionType: "+element.getQuestionType());
+            logger.info("[DATA] questionType: " + element.getQuestionType());
 
             String type = element.getQuestionType();
-            if(type==null || type.equals("")){
+            if (type == null || type.equals("")) {
                 type = element.getAnswerType();
             }
 
-            if(element.getSession().equals("") || type.equals("")
-             || userIndex == -1 || questionIndex == -1){
+            if (element.getSession().equals("") || type.equals("")
+                    || userIndex == -1 || questionIndex == -1) {
                 continue;
             }
 
@@ -122,8 +134,8 @@ public class DataService {
                     resultMatrix[userIndex][questionIndex] = csvString(element.getFreeAnswer());
                     break;
                 case "star":
-                    logger.info( resultMatrix[userIndex][questionIndex]);
-                    resultMatrix[userIndex][questionIndex] = ""+element.getValue();
+                    logger.info(resultMatrix[userIndex][questionIndex]);
+                    resultMatrix[userIndex][questionIndex] = "" + element.getValue();
                     break;
                 case "checkbox":
                     resultMatrix[userIndex][questionIndex] += "'" + csvString(element.getOption()) + "';";

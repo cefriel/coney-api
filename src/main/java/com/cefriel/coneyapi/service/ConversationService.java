@@ -146,11 +146,16 @@ public class ConversationService {
 		return Boolean.valueOf(result);
 	}
 
+	public String previewExists(String conversationId){
+		return conversationRepository.previewExists(conversationId);
+	}
+
 	public String findJsonUrlByConversationId(String conversationId) {
 
 		if(hasUserPermission(conversationId)){
 			return conversationRepository.findJsonUrlByConversationId(conversationId);
 		} else {
+			logger.error("[CONV] Not authorized");
 			return "not_auth";
 		}
 	}

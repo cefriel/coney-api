@@ -262,6 +262,7 @@ public class ConversationController {
 	}
 
 
+
 	//create chat blocks regardless of status (to be deleted)
 	@ApiOperation(value = "Creates chat block regardless of status, but with negative id")
 	@RequestMapping(value = "/previewConversation", method = RequestMethod.POST)
@@ -274,14 +275,28 @@ public class ConversationController {
 		JsonObject res = new JsonObject();
 		String status = json.get("status").getAsString();
 
+		String conversationId = json.get("conversationId").getAsString();
+
 		if(status.equals("published")){
-			logger.info("Conversation already published, starting preview");
+			logger.info("[CONVERSATION] Conversation already published, starting preview");
 			res.addProperty("success", true);
 			return res.toString();
 		}
 
+		if(status.equals("home_preview")){
+			logger.info("[CONVERSATION] Preview from home requested");
+			logger.info("********:"+conversationService.previewExists((conversationId)));
+			if(conversationService.previewExists((conversationId))!=null){
+				logger.info("[CONVERSATION] Preview already available, proceeding");
+				res.addProperty("success", true);
+				return res.toString();
+			}
+			convRete = utils.openJsonFile(conversationService.findJsonUrlByConversationId(conversationId));
+			json = (JsonObject) parser.parse(convRete);
+		}
+
 		//creates the nodes (but mark them as part of 'preview' with id>10000)
-		String conversationId = json.get("conversationId").getAsString();
+
 		JsonObject nodes = json.getAsJsonObject("nodes");
 		if(nodes==null){
 			logger.error("[CONVERSATION] ERROR: failed to get load nodes for preview");

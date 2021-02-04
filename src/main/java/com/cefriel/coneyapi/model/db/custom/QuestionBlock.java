@@ -1,4 +1,5 @@
 package com.cefriel.coneyapi.model.db.custom;
+import com.google.gson.JsonObject;
 import org.springframework.data.neo4j.annotation.QueryResult;
 
 @QueryResult
@@ -85,7 +86,7 @@ public class QuestionBlock implements Comparable<Object> {
     }
 
     public String getQuestionType() {
-        return questionType;
+        return questionType == null ? "" : questionType;
     }
 
     public void setQuestionType(String questionType) {
@@ -114,5 +115,20 @@ public class QuestionBlock implements Comparable<Object> {
 
     public void setTag(String tag) {
         this.tag = tag;
+    }
+
+    public JsonObject toJson() {
+        JsonObject blockJson = new JsonObject();
+
+        blockJson.addProperty("blockId", this.reteId);
+        blockJson.addProperty("neo4jId", this.neo4jId);
+        blockJson.addProperty("depth", this.depth);
+        blockJson.addProperty("type", this.type);
+        blockJson.addProperty("subtype", this.subtype);
+        blockJson.addProperty("ofConversation", this.ofConversation);
+        blockJson.addProperty("text", this.text);
+        blockJson.addProperty("visualization", getQuestionType());
+
+        return blockJson;
     }
 }

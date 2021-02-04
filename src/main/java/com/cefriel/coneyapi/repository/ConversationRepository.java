@@ -183,6 +183,9 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 			"LIMIT 1")
 	String createPreviewStartRelationship(String conversationId);
 
+	@Query("MATCH  (c:Conversation {conv_id: {0}})-[:STARTS]->(b:Block {of_conversation:{0}}) " +
+			"RETURN b.block_type")
+	String previewExists(String conversationId);
 
 	//TAGS queries
 	@Query("MATCH (b:Block {block_id: {1}, of_conversation:{0}}) MERGE (t:Tag {text:{2}})" +
