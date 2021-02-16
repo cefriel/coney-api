@@ -70,6 +70,8 @@ public class ChatService {
             conversation = chatRepository.getConversationById(conversationId);
         }
 
+        conversation.setChatLength(chatRepository.getConversationLength(conversationId));
+
         conversationId = conversation.getConversationId();
         logger.info("[CHAT] Conversation found: id: "+conversationId);
         JsonObject conversationJson = conversation.toJson();
@@ -244,6 +246,10 @@ public class ChatService {
                 break;
         }
 
+        if(block.getBlockType().equals("Question")){
+            block.setBlockDepth(chatRepository.getQuestionDepth(conversationId, block.getBlockId()));
+        }
+
         //SURVEY ENDED
         if(block == null){
             logger.error("[CHAT] null next block, ending conversation");
@@ -308,6 +314,9 @@ public class ChatService {
 
         //Return question and answers
         Block block = chatRepository.getSingleBlockById(blockId, conversationId);
+        if(block.getBlockType().equals("Question")){
+            block.setBlockDepth(chatRepository.getQuestionDepth(conversationId, block.getBlockId()));
+        }
         List<Block> answerSequence = chatRepository.getNextBlock(blockId, conversationId);
 
         if(answerSequence.size() == 0){
@@ -366,6 +375,11 @@ public class ChatService {
             logger.info("[CHAT] Block null");
             return null;
         }
+
+        if(block.getBlockType().equals("Question")){
+            block.setBlockDepth(chatRepository.getQuestionDepth(conversationId, block.getBlockId()));
+        }
+
 
         if(!(block.getBlockType().equals("Answer"))){
 

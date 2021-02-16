@@ -23,7 +23,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableNeo4jRepositories(basePackages = "com.cefriel.coneyapi.repository")
 public class ApplicationConfig {
 
-	public static final String NEO4J_URL = System.getenv("NEO4J_URL") != null ? System.getenv("NEO4J_URL") : "http://neo4j:neo4j@localhost:7474";
+	public static final String NEO4J_URL = System.getenv("NEO4J_URL") != null ? System.getenv("NEO4J_URL") : "http://neo4j:admin@localhost:7474";
 	public static final String RETE_PATH = System.getenv("RETE_PATH") != null ? System.getenv("RETE_PATH") : "/var/lib/tomcat/webapps/coney-retejs-files/";
 	public static final boolean SWAGGER_ENABLE = System.getenv("SWAGGER_ENABLE") != null && Boolean.parseBoolean(System.getenv("SWAGGER_ENABLE"));;
 	

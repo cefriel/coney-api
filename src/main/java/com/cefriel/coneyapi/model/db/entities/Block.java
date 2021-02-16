@@ -28,6 +28,8 @@ public class Block {
 
 	private int optional;
 
+	private int depth;
+
 	private String checkbox_type;
 
 
@@ -161,6 +163,10 @@ public class Block {
 		this.of_conversation = of_conversation;
 	}
 
+	public void setBlockDepth(int depth) {
+		this.depth = depth;
+	}
+
 	public String getText() {
 		if (text == null) {
 			return "";
@@ -223,6 +229,7 @@ public class Block {
 		blockJson.addProperty("order", this.order);
 		blockJson.addProperty("points", this.points);
 		blockJson.addProperty("optional", this.optional);
+		blockJson.addProperty("depth", this.depth);
 
 		if(this.checkbox_type!= null && !this.checkbox_type.equals("")){
 			blockJson.addProperty("checkboxType", this.checkbox_type);

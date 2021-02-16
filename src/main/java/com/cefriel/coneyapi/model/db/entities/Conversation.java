@@ -24,6 +24,7 @@ public class Conversation implements Comparable<Object> {
     private String chat_primary_color;
     private String chat_secondary_color;
     private String chat_text_color;
+    private int chat_length;
 
     public Conversation() {
 		super();
@@ -125,6 +126,14 @@ public class Conversation implements Comparable<Object> {
         this.chat_text_color = chat_text_color;
     }
 
+    public int getChatLength() {
+        return chat_length;
+    }
+
+    public void setChatLength(int chat_length) {
+        this.chat_length = chat_length;
+    }
+
     public int compareTo(Object o)
     {
         Conversation other = (Conversation) o;
@@ -137,6 +146,7 @@ public class Conversation implements Comparable<Object> {
         conversationJson.addProperty("title", this.conv_title);
         conversationJson.addProperty("status", this.status);
         conversationJson.addProperty("accessLevel", this.access_level);
+        conversationJson.addProperty("chatLength", this.chat_length);
         return conversationJson;
     }
 
@@ -149,6 +159,7 @@ public class Conversation implements Comparable<Object> {
         conversationJson.addProperty("chat_primary_color", this.chat_primary_color);
         conversationJson.addProperty("chat_secondary_color", this.chat_secondary_color);
         conversationJson.addProperty("chat_text_color", this.chat_text_color);
+        conversationJson.addProperty("chat_length", this.chat_length);
         return conversationJson;
     }
     

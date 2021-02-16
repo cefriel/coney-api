@@ -27,6 +27,16 @@ public interface ChatRepository extends Neo4jRepository<Block, Long> {
             "RETURN c LIMIT 1")
     Conversation getConversationPreviewById(String conversationId);
 
+    @Query("MATCH (c:Conversation {conv_id:{0}}), (b:Block {block_type:'Question', of_conversation:{0}}), " +
+            "p = shortestPath((c)-[a:STARTS|LEADS_TO*]-(b)) " +
+            "RETURN max(length(p)) as depth")
+    int getConversationLength(String conversationId);
+
+    @Query("MATCH (c:Conversation {conv_id:{0}}), (b:Block {block_type:'Question', of_conversation:{0}, block_id: {1}}), " +
+            "p = shortestPath((c)-[a:STARTS|LEADS_TO*]-(b)) " +
+            "RETURN length(p) as depth")
+    int getQuestionDepth(String conversationId, int reteId);
+
     @Query("MATCH (c:Conversation {conv_id:{0}})-[:STARTS]->(n:Block)" +
             "RETURN n LIMIT 1")
     Block getFirstBlock(String conversationId);
