@@ -25,6 +25,11 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 			"c.access_level AS accessLevel, c.status AS status")
 	List<ConversationResponse> searchAllConversation();
 
+	@Query("MATCH (c:Conversation) " +
+			"WHERE c.conv_id = {0} " +
+			"RETURN c LIMIT 1")
+	Conversation getConversationById(String conversationId);
+
 	@Query("MATCH (cust:Customer {username: {0}})-[wo:WORKS_ON]->(pr:Project), " +
             "(pr)<-[bt:BELONGS_TO]-(c:Conversation {conv_id:{1}}) " +
             "RETURN EXISTS ( (cust)-[wo:WORKS_ON]-(pr)-[bt]-(c) ) AND wo.access_level >= c.access_level")
@@ -286,4 +291,9 @@ public interface ConversationRepository extends Neo4jRepository<Conversation, Lo
 			"SET c.chat_primary_color = {1},  c.chat_secondary_color = {2}, c.chat_text_color = {3} " +
 			"RETURN c.chat_primary_color")
 	String setConversationChatColors(String conversationId, String primary, String secondary, String text);
+
+	@Query("MATCH (c:Conversation {conv_id: {0}}) " +
+			"SET c.chat_font_family = {1} " +
+			"RETURN c.chat_font_family")
+	String setConversationFontFamily(String conversationId, String fontFamily);
 }

@@ -3,6 +3,7 @@ package com.cefriel.coneyapi.service;
 import com.cefriel.coneyapi.exception.ResourceNotFoundException;
 import com.cefriel.coneyapi.model.db.custom.*;
 import com.cefriel.coneyapi.model.db.entities.Block;
+import com.cefriel.coneyapi.model.db.entities.Conversation;
 import com.cefriel.coneyapi.model.db.entities.Edge;
 import com.cefriel.coneyapi.model.db.entities.Tag;
 import com.cefriel.coneyapi.model.other.Checkbox;
@@ -582,8 +583,14 @@ public class ConversationService {
 		conversationRepository.setCustomerForDeletion(username);
 	}
 
+	public String getChatDetails(String conversationId){
+ 		Conversation c = conversationRepository.getConversationById(conversationId);
+ 		logger.info(c.getChat_text_color());
+ 		return c.toChatJson().toString();
+	}
+
 	public void saveChatDetails(String conversationId, String chatImage, String chatPrivacyNotice, String chatIntroText,
-								String primaryColor, String secondaryColor, String textColor){
+								String primaryColor, String secondaryColor, String textColor, String fontFamily){
 
  		if(!chatImage.equals("")){
  			conversationRepository.setConversationChatImage(conversationId, chatImage);
@@ -596,6 +603,9 @@ public class ConversationService {
 		}
 		if(!primaryColor.equals("")){
 			conversationRepository.setConversationChatColors(conversationId, primaryColor, secondaryColor, textColor);
+		}
+		if(!fontFamily.equals("")){
+			conversationRepository.setConversationFontFamily(conversationId, fontFamily);
 		}
 	}
 
@@ -643,6 +653,14 @@ public class ConversationService {
 
 				switch (blockSubtype) {
 					case ("text"):
+						try{
+							blockText = data_obj.get("text").getAsString();
+						} catch (Exception e){
+							blockText = "";
+						}
+
+						break;
+					case ("iframe"):
 						try{
 							blockText = data_obj.get("text").getAsString();
 						} catch (Exception e){

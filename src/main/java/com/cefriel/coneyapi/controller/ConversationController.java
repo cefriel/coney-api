@@ -161,7 +161,7 @@ public class ConversationController {
 		return conversationService.uploadTags(tag_list);
 	}
 
-	// DELETE - unpublish conversation
+	// GET - unpublish conversation
 	@ApiOperation(value = "Sets conversation status to 'Unpublished'")
 	@RequestMapping(value = "/unpublishConversation", method = RequestMethod.GET)
 	public boolean unpublishConversationById(
@@ -174,6 +174,17 @@ public class ConversationController {
     		throw new Exception("chat has to be published in order to be unpublished");
 		}
 
+		if(project!=null && !project.equals("")){
+			String json_url = conversationService.findJsonUrlByConversationId(conversationId);
+			if(!utils.changeStatusInJson(json_url, project,"unpublished")){
+				logger.error("[CONVERSATION] Error, unable to change status in json");
+				throw new ResourceNotFoundException("Error, unable to change status in json");
+			}
+		} else {
+			logger.error("[CONVERSATION] The project value is necessary to update the fields");
+			throw new ResourceNotFoundException("Error, the project value is necessary to update the fields");
+		}
+
 		// set to unpublished the conversation status
 		boolean statusChange = conversationService.updateConversationStatus(conversationId, "unpublished");
 
@@ -182,14 +193,90 @@ public class ConversationController {
 			throw new ResourceNotFoundException("No conversation found with ID: "+conversationId);
 		}
 
-		String json_url = conversationService.findJsonUrlByConversationId(conversationId);
-		if(!utils.changeStatusInJson(json_url, project,"unpublished")){
-			logger.error("[CONVERSATION] Error, unable to change status in json");
-			throw new ResourceNotFoundException("Error, unable to change status in json");
-		}
+
+
 
 		logger.info("[CONVERSATION] Status successfully set to UNPUBLISHED");
 		return true;
+
+	}
+
+
+	// GET - unpublish conversation
+	@ApiOperation(value = "Sets conversation status to 'Unpublished'")
+	@RequestMapping(value = "/publishConversationFromHome", method = RequestMethod.GET)
+	public String publishConversationFromHome(
+			@RequestParam(value = "conversationId") String conversationId,
+			@RequestParam(value = "project", required = false) String project)
+			throws ResourceNotFoundException, Exception {
+
+		if(conversationService.isPublished(conversationId)){
+			logger.error("[CONVERSATION] ERROR: chat is already published");
+			throw new Exception("ERROR: chat is already published");
+		}
+
+		String json_url = conversationService.findJsonUrlByConversationId(conversationId);
+		String json_file = utils.openJsonFile(json_url);
+
+
+		// set to unpublished the conversation status
+		boolean statusChange = conversationService.updateConversationStatus(conversationId, "published");
+
+		JsonParser parser = new JsonParser();
+		JsonObject json = (JsonObject) parser.parse(json_file);
+
+		logger.info("Publish requested for conversation "+conversationId);
+		String status = json.get("status").getAsString();
+		String title = json.get("title").getAsString();
+
+		if (conversationId.equals("")) {
+			//Not allowed to publish an unsaved conversation
+			logger.error("[CONVERSATION] Operation not allowed. You can't publish a conversation without having saved it before.");
+			throw new ConflictException("You can't publish a conversation without having saved it before.");
+
+		} else {
+			//Not allowed to publish an already published conversation
+			if (status.equals("published")) {
+				logger.error("[CONVERSATION] Operation not allowed. A published conversation cannot be re-published.");
+				throw new ConflictException("You can't publish a published conversation.");
+
+			} else if (status.equals("saved")) { // se il campo è valorizzato publish di una conversazione già salvata (saveRewrite + Update)
+
+				//save the conversation again
+				logger.info("Conversation saved");
+				JsonObject nodes = (JsonObject) json.get("nodes");
+				boolean check = conversationService.uploadNodesAndEdged(nodes, conversationId, false);
+				if(check){
+					json.addProperty("status", "published");
+					utils.saveJsonToFile(json, project, title);
+					logger.info("[CONVERSATION] Status successfully set to PUBLISHED");
+				} else {
+					json.addProperty("status", "saved");
+				}
+
+			} else if (status.equals("unpublished")) {
+
+				if(!statusChange){
+					logger.error("[CONVERSATION] Error, no conversation found with ID: "+conversationId);
+					throw new ResourceNotFoundException("Error, no conversation found with ID: "+conversationId);
+				} else {
+					json.addProperty("status", "published");
+					utils.saveJsonToFile(json, project, title);
+					logger.info("[CONVERSATION] Status successfully set to PUBLISHED");
+				}
+
+			} else {
+				logger.error("[CONVERSATION] Parsing error. The field status can be empty, \"saved\" or \"published\" or \"unpublished\"");
+				throw new ParsingException("Parsing error. The field status can be empty, \"saved\" or \"published\"");
+			}
+		}
+
+		JsonObject res = new JsonObject();
+		res.addProperty("conversationId", conversationId);
+		res.addProperty("title", title);
+		if(!project.equals("")){res.addProperty("projectName", project);}
+		res.addProperty("status", "published");
+		return res.toString();
 
 	}
 
@@ -328,6 +415,68 @@ public class ConversationController {
 			throws Exception {
 		logger.info("[CONVERSATION] Getting projects");
 		return conversationService.getCustomerProjects();
+	}
+
+	//updates the conversation node and creates chat blocks
+	@ApiOperation(value = "Updates the style of the chat interface")
+	@RequestMapping(value = "/getChatStyle", method = RequestMethod.GET)
+	public String getStyle(@RequestParam(value = "conversationId") String conversationId) throws Exception {
+    	String res = conversationService.getChatDetails(conversationId);
+    	if(res != null){
+    		return res;
+		} else {
+			logger.error("[CONVERSATION] Error, no conversation found");
+			throw new ResourceNotFoundException("[CONVERSATION] Error, no conversation found");
+		}
+	}
+
+	//updates the conversation node and creates chat blocks
+	@ApiOperation(value = "Updates the style of the chat interface")
+	@RequestMapping(value = "/updateStyle", method = RequestMethod.POST)
+	public String updateStyle(@RequestBody String convData) throws Exception {
+		boolean commercial = !SecurityContextHolder.getContext().getAuthentication().getName().equals("anonymousUser");
+		if(!commercial){
+			logger.error("[CONVERSATION] Error, not_authorized");
+			throw new Exception("not_authorized");
+		}
+
+		JsonParser parser = new JsonParser();
+		JsonObject json = (JsonObject) parser.parse(convData);
+
+		String conversationId = json.get("conversationId").getAsString();
+
+
+		String chatImage = "";
+		String chatPrivacyNotice = "";
+		String chatIntroText = "";
+		String chatPrimaryColor = "";
+		String chatSecondaryColor = "";
+		String chatTextColor = "";
+		String chatFontFamily = "";
+		try{
+			chatImage = json.get("chatImage").getAsString();
+		} catch(Exception ignored){}
+		try{
+			chatPrivacyNotice = json.get("chatPrivacyNotice").getAsString();
+		} catch(Exception ignored){}
+		try{
+			chatIntroText = json.get("chatIntroText").getAsString();
+		} catch(Exception ignored){}
+		try{
+			chatPrimaryColor = json.get("chatPrimaryColor").getAsString();
+			chatSecondaryColor = json.get("chatSecondaryColor").getAsString();
+			chatTextColor = json.get("chatTextColor").getAsString();
+		} catch(Exception ignored){}
+		try{
+			chatFontFamily = json.get("chatFontFamily").getAsString();
+		} catch(Exception ignored){}
+
+		logger.info("Saving chat details");
+		conversationService.saveChatDetails(conversationId, chatImage, chatPrivacyNotice, chatIntroText,
+				chatPrimaryColor, chatSecondaryColor, chatTextColor, chatFontFamily);
+		logger.info("Chat details saved");
+
+		return "true";
 	}
 
 	// POST
@@ -529,31 +678,6 @@ public class ConversationController {
 			}
 		}
 
-		String chatImage = "";
-		String chatPrivacyNotice = "";
-		String chatIntroText = "";
-		String chatPrimaryColor = "";
-		String chatSecondaryColor = "";
-		String chatTextColor = "";
-		try{
-			chatImage = json.get("chatImage").getAsString();
-		} catch(Exception ignored){}
-		try{
-			chatPrivacyNotice = json.get("chatPrivacyNotice").getAsString();
-		} catch(Exception ignored){}
-		try{
-			chatIntroText = json.get("chatIntroText").getAsString();
-		} catch(Exception ignored){}
-		try{
-			chatPrimaryColor = json.get("chatPrimaryColor").getAsString();
-			chatSecondaryColor = json.get("chatSecondaryColor").getAsString();
-			chatTextColor = json.get("chatTextColor").getAsString();
-		} catch(Exception ignored){}
-
-		logger.info("Saving chat details");
-		conversationService.saveChatDetails(conversationId, chatImage, chatPrivacyNotice, chatIntroText,
-				chatPrimaryColor, chatSecondaryColor, chatTextColor);
-		logger.info("Chat details saved");
 		JsonObject res = new JsonObject();
 		res.addProperty("conversationId", conversationId);
 		res.addProperty("title", title);

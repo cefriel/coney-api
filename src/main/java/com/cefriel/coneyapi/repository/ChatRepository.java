@@ -85,7 +85,6 @@ public interface ChatRepository extends Neo4jRepository<Block, Long> {
             "RETURN next")
     Block getNextOfCheckboxAnswerBlock(String userId, int blockId, String timestamp, int answer, String conversationId, String session, String other);
 
-
     @Query("MATCH (o:Conversation {conv_id:{1}}) " +
             "MERGE (u:User {user_id:{0}}) " +
             "CREATE (u)-[a:STARTEND {start_timestamp:{2}, session:{3}, meta1: {4}, meta2: {5}, lang: {6}}]->(o) " +
